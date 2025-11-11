@@ -11,7 +11,29 @@ builder.Services.AddDbContext<SmartMotoRentalContext>(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Seed data
+// Sử dụng scope để lấy dịch vụ cần thiết
+using (var scope = app.Services.CreateScope())
+{
+    // Lấy dịch vụ cần thiết
+    var services = scope.ServiceProvider;
+    try
+    {
+        // Lấy context của database
+        var context = services.GetRequiredService<SmartMotoRentalContext>();
+        // Seed data
+        await SeedData.SeedAsync(context);
+    }
+    catch (Exception ex)
+    {
+        // Lấy logger để log lỗi
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while seeding the database.");
+    }
+}
+
+
+// Cấu hình đường dẫn yêu cầu HTTP.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");

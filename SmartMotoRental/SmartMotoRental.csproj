@@ -17,4 +17,10 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Remove="Views\Motorbike\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Views\Motorbike\" />
+  </ItemGroup>
 </Project>
