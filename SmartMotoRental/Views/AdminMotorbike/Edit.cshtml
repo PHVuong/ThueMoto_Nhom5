@@ -1,0 +1,171 @@
+@model SmartMotoRental.Models.Motorbike
+
+@{
+    ViewData["Title"] = "Sửa thông tin xe";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h3><i class="fas fa-edit"></i> Sửa thông tin xe</h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                        <input type="hidden" asp-for="BikeId" />
+                        <input type="hidden" asp-for="ImageUrl" />
+                        
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                        
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label asp-for="Name" class="form-label">Tên xe <span class="text-danger">*</span></label>
+                                    <input asp-for="Name" class="form-control" />
+                                    <span asp-validation-for="Name" class="text-danger"></span>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label asp-for="Brand" class="form-label">Hãng xe</label>
+                                        <select asp-for="Brand" class="form-select">
+                                            <option value="">-- Chọn hãng --</option>
+                                            <option value="Honda">Honda</option>
+                                            <option value="Yamaha">Yamaha</option>
+                                            <option value="Suzuki">Suzuki</option>
+                                            <option value="SYM">SYM</option>
+                                            <option value="Piaggio">Piaggio</option>
+                                            <option value="Kawasaki">Kawasaki</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label asp-for="Type" class="form-label">Dòng xe</label>
+                                        <input asp-for="Type" class="form-control" />
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label asp-for="Year" class="form-label">Năm sản xuất</label>
+                                        <input asp-for="Year" class="form-control" type="number" 
+                                               min="1990" max="2025" />
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="PlateNumber" class="form-label">Biển số xe <span class="text-danger">*</span></label>
+                                        <input asp-for="PlateNumber" class="form-control" />
+                                        <span asp-validation-for="PlateNumber" class="text-danger"></span>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="Location" class="form-label">Địa điểm</label>
+                                        <input asp-for="Location" class="form-control" />
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="PricePerHour" class="form-label">Giá thuê/giờ (VNĐ)</label>
+                                        <input asp-for="PricePerHour" class="form-control" type="number" step="1000" />
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="PricePerDay" class="form-label">Giá thuê/ngày (VNĐ)</label>
+                                        <input asp-for="PricePerDay" class="form-control" type="number" step="1000" />
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="Condition" class="form-label">Tình trạng xe</label>
+                                        <select asp-for="Condition" class="form-select">
+                                            <option value="0">Mới</option>
+                                            <option value="1">Tốt</option>
+                                            <option value="2">Khá</option>
+                                            <option value="3">Kém</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="Status" class="form-label">Trạng thái</label>
+                                        <select asp-for="Status" class="form-select">
+                                            <option value="0">Sẵn sàng</option>
+                                            <option value="1">Đang thuê</option>
+                                            <option value="2">Bảo trì</option>
+                                            <option value="3">Không khả dụng</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Description" class="form-label">Mô tả</label>
+                                    <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Hình ảnh xe</label>
+                                    <input type="file" name="image" class="form-control" 
+                                           accept="image/*" id="imageInput" />
+                                    <div class="mt-3 text-center">
+                                        @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                                        {
+                                            <img id="imagePreview" src="@Model.ImageUrl" 
+                                                 alt="@Model.Name" class="img-thumbnail" 
+                                                 style="max-width: 100%; max-height: 300px;" />
+                                        }
+                                        else
+                                        {
+                                            <img id="imagePreview" src="/images/no-image.png" 
+                                                 alt="Preview" class="img-thumbnail" 
+                                                 style="max-width: 100%; max-height: 300px;" />
+                                        }
+                                    </div>
+                                    <small class="text-muted">Để trống nếu không muốn thay đổi ảnh</small>
+                                </div>
+
+                                <div class="alert alert-warning">
+                                    <small>
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        <strong>Chú ý:</strong>
+                                        <ul class="mb-0 mt-2">
+                                            <li>Nếu upload ảnh mới, ảnh cũ sẽ bị xóa</li>
+                                            <li>Biển số phải duy nhất</li>
+                                        </ul>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr />
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Quay lại
+                            </a>
+                            <button type="submit" class="btn btn-warning btn-lg">
+                                <i class="fas fa-save"></i> Cập nhật
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        document.getElementById('imageInput').onchange = function(evt) {
+            const [file] = this.files;
+            if (file) {
+                document.getElementById('imagePreview').src = URL.createObjectURL(file);
+            }
+        }
+    </script>
+}

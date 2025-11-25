@@ -1,0 +1,152 @@
+@model SmartMotoRental.Models.Motorbike
+
+@{
+    ViewData["Title"] = "Xóa xe";
+    var hasActiveRentals = Model.Rentals.Any(r => 
+        r.Status == RentalStatus.Pending || 
+        r.Status == RentalStatus.Confirmed);
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h3><i class="fas fa-trash"></i> Xác nhận xóa xe</h3>
+                </div>
+                <div class="card-body">
+                    @if (hasActiveRentals)
+                    {
+                        <div class="alert alert-danger">
+                            <h5><i class="fas fa-exclamation-triangle"></i> Không thể xóa xe này!</h5>
+                            <p>Xe đang có đơn thuê đang hoạt động (Chờ duyệt hoặc Đã duyệt).</p>
+                            <p class="mb-0">Vui lòng hoàn thành hoặc hủy các đơn thuê trước khi xóa xe.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning">
+                            <h5><i class="fas fa-exclamation-triangle"></i> Cảnh báo!</h5>
+                            <p class="mb-0">Bạn có chắc chắn muốn xóa xe này? Hành động này không thể hoàn tác!</p>
+                        </div>
+                    }
+
+                    <div class="row mt-4">
+                        <div class="col-md-4 text-center">
+                            @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                            {
+                                <img src="@Model.ImageUrl" alt="@Model.Name" 
+                                     class="img-fluid rounded" />
+                            }
+                            else
+                            {
+                                <img src="/images/no-image.png" alt="No image" 
+                                     class="img-fluid rounded" />
+                            }
+                        </div>
+                        <div class="col-md-8">
+                            <h4>@Model.Name</h4>
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th>Hãng:</th>
+                                    <td>@(Model.Brand ?? "N/A")</td>
+                                </tr>
+                                <tr>
+                                    <th>Dòng xe:</th>
+                                    <td>@(Model.Type ?? "N/A")</td>
+                                </tr>
+                                <tr>
+                                    <th>Biển số:</th>
+                                    <td><strong>@Model.PlateNumber</strong></td>
+                                </tr>
+                                <tr>
+                                    <th>Năm:</th>
+                                    <td>@(Model.Year?.ToString() ?? "N/A")</td>
+                                </tr>
+                                <tr>
+                                    <th>Giá/giờ:</th>
+                                    <td>@(Model.PricePerHour?.ToString("N0") ?? "0") VNĐ</td>
+                                </tr>
+                                <tr>
+                                    <th>Giá/ngày:</th>
+                                    <td>@(Model.PricePerDay?.ToString("N0") ?? "0") VNĐ</td>
+                                </tr>
+                                <tr>
+                                    <th>Tình trạng:</th>
+                                    <td>
+                                        @switch (Model.Condition)
+                                        {
+                                            case MotorbikeCondition.New:
+                                                <span class="badge bg-success">Mới</span>
+                                                break;
+                                            case MotorbikeCondition.Good:
+                                                <span class="badge bg-primary">Tốt</span>
+                                                break;
+                                            case MotorbikeCondition.Fair:
+                                                <span class="badge bg-warning">Khá</span>
+                                                break;
+                                            case MotorbikeCondition.Poor:
+                                                <span class="badge bg-danger">Kém</span>
+                                                break;
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Trạng thái:</th>
+                                    <td>
+                                        @switch (Model.Status)
+                                        {
+                                            case MotorbikeStatus.Available:
+                                                <span class="badge bg-success">Sẵn sàng</span>
+                                                break;
+                                            case MotorbikeStatus.Rented:
+                                                <span class="badge bg-warning">Đang thuê</span>
+                                                break;
+                                            case MotorbikeStatus.Maintenance:
+                                                <span class="badge bg-info">Bảo trì</span>
+                                                break;
+                                            case MotorbikeStatus.Unavailable:
+                                                <span class="badge bg-secondary">Không khả dụng</span>
+                                                break;
+                                        }
+                                    </td>
+                                </tr>
+                            </table>
+
+                            @if (Model.Rentals.Any())
+                            {
+                                <div class="alert alert-info">
+                                    <strong>Thống kê:</strong>
+                                    <ul class="mb-0">
+                                        <li>Tổng số đơn thuê: @Model.Rentals.Count</li>
+                                        <li>Đơn đã hoàn thành: @Model.Rentals.Count(r => r.Status == RentalStatus.Completed)</li>
+                                        <li>Đơn đang hoạt động: @Model.Rentals.Count(r => r.Status == RentalStatus.Pending || r.Status == RentalStatus.Confirmed)</li>
+                                    </ul>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Index" class="btn btn-secondary btn-lg">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </a>
+                        
+                        @if (!hasActiveRentals)
+                        {
+                            <form asp-action="Delete" method="post">
+                                <input type="hidden" asp-for="BikeId" />
+                                <button type="submit" class="btn btn-danger btn-lg"
+                                        onclick="return confirm('Bạn có chắc chắn muốn xóa xe này không?')">
+                                    <i class="fas fa-trash"></i> Xác nhận xóa
+                                </button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
