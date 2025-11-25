@@ -37,18 +37,35 @@
     </div>
   </div>
 
-  <script>
-    function login() {
-      const user = document.getElementById("username").value;
-      const pass = document.getElementById("password").value;
+ <script>
+  async function login() {
+    const user = document.getElementById("username").value;
+    const pass = document.getElementById("password").value;
 
-      if (user === "" || pass === "") {
-        alert("Vui lòng nhập đầy đủ thông tin!");
-      } else {
-        alert("Đăng nhập thành công (demo)!");
-         window.location.href = "home.html";
-      }
+    if (user === "" || pass === "") {
+      alert("Vui lòng nhập đầy đủ thông tin!");
+      return;
     }
-  </script>
+
+    const res = await fetch("https://localhost:5001/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: user,
+        password: pass
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      alert("Đăng nhập thành công!");
+      window.location.href = "home.html"; 
+    } else {
+      alert(data.message);
+    }
+  }
+</script>
+
 </body>
 </html>
