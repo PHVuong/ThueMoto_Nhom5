@@ -8,6 +8,7 @@ public static class SeedData
     public static async Task SeedAsync(SmartMotoRentalContext context)
     {
         await context.Database.EnsureCreatedAsync();
+
         if (!await context.Motorbikes.AnyAsync())
         {
             var motorbikes = new List<Motorbike>
@@ -119,6 +120,31 @@ public static class SeedData
                 }
             };
             await context.Motorbikes.AddRangeAsync(motorbikes);
+            await context.SaveChangesAsync();
+        }
+
+        if (!await context.Notifications.AnyAsync())
+        {
+            var notifications = new List<Notification>
+            {
+                new Notification 
+                { 
+                    Message = "Xe A đã được đặt thành công",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Notification 
+                { 
+                    Message = "Lịch thuê xe của bạn sắp đến hạn",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Notification 
+                { 
+                    Message = "Xe B có ưu đãi 20%",
+                    CreatedAt = DateTime.UtcNow
+                }
+            };
+
+            await context.Notifications.AddRangeAsync(notifications);
             await context.SaveChangesAsync();
         }
     }
