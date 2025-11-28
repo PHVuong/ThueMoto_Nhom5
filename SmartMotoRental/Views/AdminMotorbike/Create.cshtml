@@ -1,0 +1,148 @@
+@model SmartMotoRental.Models.Motorbike
+
+@{
+    ViewData["Title"] = "Thêm xe mới";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3><i class="fas fa-plus-circle"></i> Thêm xe mới</h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post" enctype="multipart/form-data">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                        
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label asp-for="Name" class="form-label">Tên xe <span class="text-danger">*</span></label>
+                                    <input asp-for="Name" class="form-control" placeholder="VD: Honda Wave RSX 110" />
+                                    <span asp-validation-for="Name" class="text-danger"></span>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label asp-for="Brand" class="form-label">Hãng xe</label>
+                                        <select asp-for="Brand" class="form-select">
+                                            <option value="">-- Chọn hãng --</option>
+                                            <option value="Honda">Honda</option>
+                                            <option value="Yamaha">Yamaha</option>
+                                            <option value="Suzuki">Suzuki</option>
+                                            <option value="SYM">SYM</option>
+                                            <option value="Piaggio">Piaggio</option>
+                                            <option value="Kawasaki">Kawasaki</option>
+                                        </select>
+                                        <span asp-validation-for="Brand" class="text-danger"></span>
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label asp-for="Type" class="form-label">Dòng xe</label>
+                                        <input asp-for="Type" class="form-control" placeholder="VD: Số" />
+                                        <span asp-validation-for="Type" class="text-danger"></span>
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label asp-for="Year" class="form-label">Năm sản xuất</label>
+                                        <input asp-for="Year" class="form-control" type="number" 
+                                               min="1990" max="2025" placeholder="VD: 2023" />
+                                        <span asp-validation-for="Year" class="text-danger"></span>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="PlateNumber" class="form-label">Biển số xe <span class="text-danger">*</span></label>
+                                        <input asp-for="PlateNumber" class="form-control" placeholder="VD: 43A-12345" />
+                                        <span asp-validation-for="PlateNumber" class="text-danger"></span>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="Location" class="form-label">Địa điểm</label>
+                                        <input asp-for="Location" class="form-control" placeholder="VD: Đà Nẵng" />
+                                        <span asp-validation-for="Location" class="text-danger"></span>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="PricePerHour" class="form-label">Giá thuê/giờ (VNĐ)</label>
+                                        <input asp-for="PricePerHour" class="form-control" type="number" 
+                                               step="1000" placeholder="VD: 20000" />
+                                        <span asp-validation-for="PricePerHour" class="text-danger"></span>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="PricePerDay" class="form-label">Giá thuê/ngày (VNĐ)</label>
+                                        <input asp-for="PricePerDay" class="form-control" type="number" 
+                                               step="1000" placeholder="VD: 100000" />
+                                        <span asp-validation-for="PricePerDay" class="text-danger"></span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Description" class="form-label">Mô tả</label>
+                                    <textarea asp-for="Description" class="form-control" rows="4" 
+                                              placeholder="Nhập mô tả chi tiết về xe..."></textarea>
+                                    <span asp-validation-for="Description" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Hình ảnh xe</label>
+                                    <input type="file" name="image" class="form-control" 
+                                           accept="image/*" id="imageInput" />
+                                    <div class="mt-3 text-center">
+                                        <img id="imagePreview" src="/images/no-image.png" 
+                                             alt="Preview" class="img-thumbnail" 
+                                             style="max-width: 100%; max-height: 300px;" />
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-info">
+                                    <small>
+                                        <i class="fas fa-info-circle"></i>
+                                        <strong>Lưu ý:</strong>
+                                        <ul class="mb-0 mt-2">
+                                            <li>Trường có dấu <span class="text-danger">*</span> là bắt buộc</li>
+                                            <li>Biển số phải duy nhất</li>
+                                            <li>Nên upload ảnh rõ nét</li>
+                                        </ul>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr />
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Quay lại
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save"></i> Lưu xe
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // Preview ảnh trước khi upload
+        document.getElementById('imageInput').onchange = function(evt) {
+            const [file] = this.files;
+            if (file) {
+                document.getElementById('imagePreview').src = URL.createObjectURL(file);
+            }
+        }
+    </script>
+}

@@ -1,0 +1,351 @@
+@model SmartMotoRental.Models.Rental
+
+@{
+    ViewData["Title"] = "Chi tiết đơn thuê";
+}
+
+<div class="container mt-4">
+    <div class="row mb-3">
+        <div class="col">
+            <h2><i class="fas fa-file-invoice"></i> Chi tiết đơn thuê #@Model.RentalId</h2>
+        </div>
+        <div class="col text-end">
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Quay lại
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row">
+        <!-- Thông tin đơn thuê -->
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5><i class="fas fa-info-circle"></i> Thông tin đơn thuê</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted">Mã đơn thuê:</label>
+                            <div><strong>#@Model.RentalId</strong></div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted">Trạng thái:</label>
+                            <div>
+                                @switch (Model.Status)
+                                {
+                                    case RentalStatus.Pending:
+                                        <span class="badge bg-warning text-dark fs-6">Chờ duyệt</span>
+                                        break;
+                                    case RentalStatus.Confirmed:
+                                        <span class="badge bg-success fs-6">Đã duyệt</span>
+                                        break;
+                                    case RentalStatus.Completed:
+                                        <span class="badge bg-primary fs-6">Hoàn thành</span>
+                                        break;
+                                    case RentalStatus.Cancelled:
+                                        <span class="badge bg-danger fs-6">Đã hủy</span>
+                                        break;
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted">Thời gian lấy xe:</label>
+                            <div><strong>@(Model.PickupTime?.ToString("dd/MM/yyyy HH:mm") ?? "Chưa xác định")</strong></div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted">Thời gian trả xe:</label>
+                            <div><strong>@(Model.ReturnTime?.ToString("dd/MM/yyyy HH:mm") ?? "Chưa xác định")</strong></div>
+                        </div>
+                    </div>
+
+                    @if (Model.PickupTime.HasValue && Model.ReturnTime.HasValue)
+                    {
+                        var duration = Model.ReturnTime.Value - Model.PickupTime.Value;
+                        <div class="alert alert-info">
+                            <i class="fas fa-clock"></i> 
+                            Thời gian thuê: <strong>@duration.Days ngày @duration.Hours giờ</strong>
+                        </div>
+                    }
+
+                    <hr />
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted">Tổng tiền:</label>
+                            <div class="fs-4 text-success">
+                                <strong>@(Model.TotalPrice?.ToString("N0") ?? "0") VNĐ</strong>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted">Phương thức thanh toán:</label>
+                            <div>
+                                @if (Model.PaymentMethod.HasValue)
+                                {
+                                    <span class="badge bg-info fs-6">@Model.PaymentMethod.Value</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Chưa xác định</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted">Trạng thái thanh toán:</label>
+                        <div>
+                            @if (Model.PaymentPaidAt.HasValue)
+                            {
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check-circle"></i> Đã thanh toán
+                                </span>
+                                <small class="text-muted ms-2">(@Model.PaymentPaidAt.Value.ToString("dd/MM/yyyy HH:mm"))</small>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark">
+                                    <i class="fas fa-clock"></i> Chưa thanh toán
+                                </span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="text-muted">Ngày tạo đơn:</label>
+                        <div>@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thông tin xe -->
+            @if (Model.Motorbike != null)
+            {
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5><i class="fas fa-motorcycle"></i> Thông tin xe</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                @if (!string.IsNullOrEmpty(Model.Motorbike.ImageUrl))
+                                {
+                                    <img src="@Model.Motorbike.ImageUrl" alt="@Model.Motorbike.Name" 
+                                         class="img-fluid rounded" />
+                                }
+                                else
+                                {
+                                    <img src="/images/no-image.png" alt="No image" 
+                                         class="img-fluid rounded" />
+                                }
+                            </div>
+                            <div class="col-md-8">
+                                <h4>@Model.Motorbike.Name</h4>
+                                <p class="text-muted">@Model.Motorbike.Brand @Model.Motorbike.Type</p>
+                                
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td><strong>Biển số:</strong></td>
+                                        <td>@Model.Motorbike.PlateNumber</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Năm:</strong></td>
+                                        <td>@(Model.Motorbike.Year?.ToString() ?? "N/A")</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Tình trạng:</strong></td>
+                                        <td>
+                                            @switch (Model.Motorbike.Condition)
+                                            {
+                                                case MotorbikeCondition.New:
+                                                    <span class="badge bg-success">Mới</span>
+                                                    break;
+                                                case MotorbikeCondition.Good:
+                                                    <span class="badge bg-primary">Tốt</span>
+                                                    break;
+                                                case MotorbikeCondition.Fair:
+                                                    <span class="badge bg-warning">Khá</span>
+                                                    break;
+                                                case MotorbikeCondition.Poor:
+                                                    <span class="badge bg-danger">Kém</span>
+                                                    break;
+                                            }
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Trạng thái:</strong></td>
+                                        <td>
+                                            @switch (Model.Motorbike.Status)
+                                            {
+                                                case MotorbikeStatus.Available:
+                                                    <span class="badge bg-success">Sẵn sàng</span>
+                                                    break;
+                                                case MotorbikeStatus.Rented:
+                                                    <span class="badge bg-warning">Đang thuê</span>
+                                                    break;
+                                                case MotorbikeStatus.Maintenance:
+                                                    <span class="badge bg-info">Bảo trì</span>
+                                                    break;
+                                                case MotorbikeStatus.Unavailable:
+                                                    <span class="badge bg-secondary">Không khả dụng</span>
+                                                    break;
+                                            }
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Thông tin khách hàng & Hành động -->
+        <div class="col-md-4">
+            <!-- Thông tin khách hàng -->
+            @if (Model.User != null)
+            {
+                <div class="card mb-4">
+                    <div class="card-header bg-secondary text-white">
+                        <h5><i class="fas fa-user"></i> Thông tin khách hàng</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-2">
+                            <strong>Họ tên:</strong>
+                            <div>@Model.User.FullName</div>
+                        </div>
+                        <div class="mb-2">
+                            <strong>Email:</strong>
+                            <div>@Model.User.Email</div>
+                        </div>
+                        @if (!string.IsNullOrEmpty(Model.User.PhoneNumber))
+                        {
+                            <div class="mb-2">
+                                <strong>Số điện thoại:</strong>
+                                <div>@Model.User.PhoneNumber</div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Hành động -->
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5><i class="fas fa-cogs"></i> Hành động</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Status == RentalStatus.Pending)
+                    {
+                        <form asp-action="Approve" method="post" class="mb-2">
+                            <input type="hidden" name="id" value="@Model.RentalId" />
+                            <button type="submit" class="btn btn-success w-100" 
+                                    onclick="return confirm('Bạn chắc chắn muốn duyệt đơn thuê này?')">
+                                <i class="fas fa-check"></i> Duyệt đơn
+                            </button>
+                        </form>
+
+                        <button type="button" class="btn btn-danger w-100" 
+                                data-bs-toggle="modal" data-bs-target="#rejectModal">
+                            <i class="fas fa-times"></i> Từ chối đơn
+                        </button>
+                    }
+                    else if (Model.Status == RentalStatus.Confirmed)
+                    {
+                        <form asp-action="Complete" method="post" class="mb-2">
+                            <input type="hidden" name="id" value="@Model.RentalId" />
+                            <button type="submit" class="btn btn-primary w-100"
+                                    onclick="return confirm('Xác nhận hoàn thành đơn thuê này?')">
+                                <i class="fas fa-check-double"></i> Hoàn thành
+                            </button>
+                        </form>
+
+                        <button type="button" class="btn btn-warning w-100" 
+                                data-bs-toggle="modal" data-bs-target="#cancelModal">
+                            <i class="fas fa-ban"></i> Hủy đơn
+                        </button>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle"></i>
+                            Không có hành động nào khả dụng cho đơn thuê này.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Từ chối -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="Reject" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Từ chối đơn thuê</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id" value="@Model.RentalId" />
+                    <div class="mb-3">
+                        <label class="form-label">Lý do từ chối (tùy chọn):</label>
+                        <textarea name="reason" class="form-control" rows="3" 
+                                  placeholder="Nhập lý do từ chối..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" class="btn btn-danger">Từ chối đơn</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Hủy đơn -->
+<div class="modal fade" id="cancelModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="Cancel" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Hủy đơn thuê</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id" value="@Model.RentalId" />
+                    <div class="mb-3">
+                        <label class="form-label">Lý do hủy (tùy chọn):</label>
+                        <textarea name="reason" class="form-control" rows="3" 
+                                  placeholder="Nhập lý do hủy..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-warning">Hủy đơn</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
