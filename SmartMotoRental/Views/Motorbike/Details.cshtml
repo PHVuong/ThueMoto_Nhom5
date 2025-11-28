@@ -1,35 +1,442 @@
 @model SmartMotoRental.Models.Motorbike
 @{
     ViewData["Title"] = "Chi tiết xe máy";
+    var conditionText = Model.Condition switch
+    {
+        SmartMotoRental.Models.MotorbikeCondition.New => "Mới",
+        SmartMotoRental.Models.MotorbikeCondition.Good => "Tốt",
+        SmartMotoRental.Models.MotorbikeCondition.Fair => "Trung bình",
+        SmartMotoRental.Models.MotorbikeCondition.Poor => "Cần sửa chữa",
+        _ => Model.Condition.ToString()
+    };
+    var conditionClass = Model.Condition switch
+    {
+        SmartMotoRental.Models.MotorbikeCondition.New => "condition-new",
+        SmartMotoRental.Models.MotorbikeCondition.Good => "condition-good",
+        SmartMotoRental.Models.MotorbikeCondition.Fair => "condition-fair",
+        SmartMotoRental.Models.MotorbikeCondition.Poor => "condition-poor",
+        _ => "condition-good"
+    };
+    var statusText = Model.Status switch
+    {
+        SmartMotoRental.Models.MotorbikeStatus.Available => "Có sẵn",
+        SmartMotoRental.Models.MotorbikeStatus.Unavailable => "Không có sẵn",
+        SmartMotoRental.Models.MotorbikeStatus.Maintenance => "Đang bảo trì",
+        SmartMotoRental.Models.MotorbikeStatus.Rented => "Đang được thuê",
+        _ => Model.Status.ToString()
+    };
+    var statusClass = Model.Status == SmartMotoRental.Models.MotorbikeStatus.Available ? "status-available" : "status-unavailable";
 }
-<div class="container mt-4">
+
+<style>
+    .detail-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 0 0 30px 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .detail-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .detail-image-container {
+        position: relative;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        margin-bottom: 2rem;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 500px;
+    }
+    
+    .detail-image-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    
+    .detail-image-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 500px;
+        color: #999;
+        font-size: 5rem;
+    }
+    
+    .detail-status-badge {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        z-index: 10;
+    }
+    
+    .status-available {
+        background: rgba(40, 167, 69, 0.95);
+        color: white;
+    }
+    
+    .status-unavailable {
+        background: rgba(220, 53, 69, 0.95);
+        color: white;
+    }
+    
+    .detail-info-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        margin-bottom: 2rem;
+    }
+    
+    .detail-info-card h3 {
+        color: #2c3e50;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 3px solid #667eea;
+    }
+    
+    .info-row {
+        display: flex;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    
+    .info-label {
+        font-weight: 600;
+        color: #667eea;
+        min-width: 150px;
+        font-size: 1rem;
+    }
+    
+    .info-value {
+        color: #2c3e50;
+        font-size: 1rem;
+        flex: 1;
+    }
+    
+    .info-icon {
+        width: 24px;
+        height: 24px;
+        margin-right: 10px;
+        color: #667eea;
+    }
+    
+    .condition-badge {
+        display: inline-block;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .condition-new {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .condition-good {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+    
+    .condition-fair {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    .condition-poor {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .price-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        color: white;
+        margin: 2rem 0;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+    
+    .price-section h3 {
+        color: white;
+        margin-bottom: 1.5rem;
+        border-bottom: 2px solid rgba(255,255,255,0.3);
+        padding-bottom: 1rem;
+    }
+    
+    .price-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .price-item:last-child {
+        border-bottom: none;
+    }
+    
+    .price-label {
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+    
+    .price-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+    
+    .description-section {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        margin-bottom: 2rem;
+    }
+    
+    .description-section h3 {
+        color: #2c3e50;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 3px solid #667eea;
+    }
+    
+    .description-content {
+        color: #555;
+        font-size: 1.05rem;
+        line-height: 1.8;
+        white-space: pre-wrap;
+    }
+    
+    .description-empty {
+        color: #999;
+        font-style: italic;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+    
+    .btn-rent {
+        flex: 1;
+        min-width: 200px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        padding: 15px 40px;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-rent:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        color: white;
+    }
+    
+    .btn-back {
+        flex: 1;
+        min-width: 200px;
+        background: white;
+        border: 2px solid #667eea;
+        padding: 15px 40px;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #667eea;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-back:hover {
+        background: #667eea;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    @@media (max-width: 768px) {
+        .detail-header h1 {
+            font-size: 1.8rem;
+        }
+        
+        .detail-image-container {
+            min-height: 300px;
+        }
+        
+        .detail-image-placeholder {
+            height: 300px;
+            font-size: 3rem;
+        }
+        
+        .info-label {
+            min-width: 120px;
+            font-size: 0.9rem;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+        
+        .btn-rent, .btn-back {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="detail-header">
+    <div class="container">
+        <h1>🏍️ @Model.Name</h1>
+        <p style="opacity: 0.9; margin: 0;">Thông tin chi tiết về xe máy</p>
+    </div>
+</div>
+
+<div class="container">
     <div class="row">
-        <div class="col-md-6">
-            <img src="@Model.ImageUrl" class="img-fluid rounded" alt="@Model.Name">
+        <div class="col-lg-6">
+            <div class="detail-image-container">
+                @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                {
+                    <img src="@Model.ImageUrl" alt="@Model.Name" />
+                }
+                else
+                {
+                    <div class="detail-image-placeholder">🏍️</div>
+                }
+                <div class="detail-status-badge @statusClass">
+                    @statusText
+                </div>
+            </div>
         </div>
-        <div class="col-md-6">
-            <h1>@Model.Name</h1>
-            <hr>
-            <p><strong>Loại xe:</strong> @Model.Type</p>
-            <p><strong>Hãng:</strong> @Model.Brand</p>
-            <p><strong>Năm sản xuất:</strong> @Model.Year</p>
-            <p><strong>Biển số:</strong> @Model.PlateNumber</p>
-            <p><strong>Tình trạng:</strong> @Model.Condition</p>
-            <p><strong>Vị trí:</strong> @Model.Location</p>
-            <hr>
-            <h3>Giá thuê</h3>
+        
+        <div class="col-lg-6">
+            <div class="detail-info-card">
+                <h3>📋 Thông Tin Xe</h3>
+                
+                @if (!string.IsNullOrEmpty(Model.Type))
+                {
+                    <div class="info-row">
+                        <span class="info-label">Loại xe:</span>
+                        <span class="info-value">@Model.Type</span>
+                    </div>
+                }
+                
+                @if (!string.IsNullOrEmpty(Model.Brand))
+                {
+                    <div class="info-row">
+                        <span class="info-label">Hãng sản xuất:</span>
+                        <span class="info-value">@Model.Brand</span>
+                    </div>
+                }
+                
+                @if (Model.Year.HasValue)
+                {
+                    <div class="info-row">
+                        <span class="info-label">Năm sản xuất:</span>
+                        <span class="info-value">@Model.Year</span>
+                    </div>
+                }
+                
+                @if (!string.IsNullOrEmpty(Model.PlateNumber))
+                {
+                    <div class="info-row">
+                        <span class="info-label">Biển số:</span>
+                        <span class="info-value">@Model.PlateNumber</span>
+                    </div>
+                }
+                
+                <div class="info-row">
+                    <span class="info-label">Tình trạng:</span>
+                    <span class="info-value">
+                        <span class="condition-badge @conditionClass">
+                            @conditionText
+                        </span>
+                    </span>
+                </div>
+                
+                @if (!string.IsNullOrEmpty(Model.Location))
+                {
+                    <div class="info-row">
+                        <span class="info-label">📍 Vị trí:</span>
+                        <span class="info-value">@Model.Location</span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    
+    @if (Model.PricePerHour.HasValue || Model.PricePerDay.HasValue)
+    {
+        <div class="price-section">
+            <h3>💰 Giá Thuê</h3>
             @if (Model.PricePerHour.HasValue)
             {
-                <p><strong>Theo giờ:</strong> @Model.PricePerHour.Value.ToString("N0") VNĐ</p>
+                <div class="price-item">
+                    <span class="price-label">Theo giờ:</span>
+                    <span class="price-value">@Model.PricePerHour.Value.ToString("N0") VNĐ</span>
+                </div>
             }
             @if (Model.PricePerDay.HasValue)
             {
-                <p><strong>Theo ngày:</strong> @Model.PricePerDay.Value.ToString("N0") VNĐ</p>
+                <div class="price-item">
+                    <span class="price-label">Theo ngày:</span>
+                    <span class="price-value">@Model.PricePerDay.Value.ToString("N0") VNĐ</span>
+                </div>
             }
-            <hr>
-            <h4>Mô tả</h4>
-            <p>@Model.Description</p>
-            <a href="@Url.Action("Index", "Motorbike")" class="btn btn-secondary">Quay lại danh sách</a>
         </div>
+    }
+    
+    @if (!string.IsNullOrEmpty(Model.Description))
+    {
+        <div class="description-section">
+            <h3>📝 Mô Tả</h3>
+            <div class="description-content">@Model.Description</div>
+        </div>
+    }
+    else
+    {
+        <div class="description-section">
+            <h3>📝 Mô Tả</h3>
+            <div class="description-content description-empty">Chưa có mô tả cho xe máy này.</div>
+        </div>
+    }
+    
+    <div class="action-buttons">
+        @if (Model.Status == SmartMotoRental.Models.MotorbikeStatus.Available)
+        {
+            <button class="btn btn-rent" onclick="alert('Tính năng thuê xe sẽ được triển khai sớm!')">
+                🚀 Thuê Ngay
+            </button>
+        }
+        <a href="@Url.Action("Index", "Motorbike")" class="btn btn-back">
+            ← Quay Lại Danh Sách
+        </a>
     </div>
 </div>

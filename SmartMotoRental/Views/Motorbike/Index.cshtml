@@ -2,40 +2,337 @@
 @{
     ViewData["Title"] = "Danh sách xe cho thuê";
 }
-<div>
-    <h1>Danh sách xe máy</h1>
+
+<style>
+    .bike-list-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 3rem;
+        border-radius: 0 0 30px 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .bike-list-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .bike-list-header p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+        margin: 0;
+    }
+    
+    .bike-card {
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        margin-bottom: 2rem;
+        background: white;
+        height: 100%;
+    }
+    
+    .bike-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    }
+    
+    .bike-image-wrapper {
+        position: relative;
+        overflow: hidden;
+        height: 280px;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+    
+    .bike-image-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    
+    .bike-card:hover .bike-image-wrapper img {
+        transform: scale(1.1);
+    }
+    
+    .bike-status-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: rgba(40, 167, 69, 0.95);
+        color: white;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        z-index: 10;
+    }
+    
+    .bike-card-body {
+        padding: 1.5rem;
+    }
+    
+    .bike-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 1rem;
+        line-height: 1.3;
+    }
+    
+    .bike-info {
+        margin-bottom: 1rem;
+    }
+    
+    .bike-info-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.6rem;
+        color: #555;
+        font-size: 0.95rem;
+    }
+    
+    .bike-info-item i {
+        width: 20px;
+        color: #667eea;
+        margin-right: 10px;
+        font-size: 1rem;
+    }
+    
+    .bike-info-item strong {
+        color: #2c3e50;
+        margin-right: 5px;
+        min-width: 70px;
+    }
+    
+    .bike-price {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1rem;
+        border-radius: 15px;
+        margin: 1.2rem 0;
+        text-align: center;
+    }
+    
+    .bike-price-label {
+        font-size: 0.85rem;
+        opacity: 0.9;
+        margin-bottom: 0.3rem;
+    }
+    
+    .bike-price-value {
+        font-size: 1.3rem;
+        font-weight: 700;
+    }
+    
+    .bike-price-unit {
+        font-size: 0.9rem;
+        opacity: 0.85;
+    }
+    
+    .bike-btn-details {
+        width: 100%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        padding: 12px 30px;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        color: white;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        margin-bottom: 0.5rem;
+    }
+    
+    .bike-btn-details:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        color: white;
+    }
+    
+    .bike-btn-rent {
+        width: 100%;
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        border: none;
+        padding: 12px 30px;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(245, 87, 108, 0.3);
+        color: white;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+    
+    .bike-btn-rent:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(245, 87, 108, 0.4);
+        background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+        color: white;
+    }
+    
+    .bike-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        border-radius: 20px;
+        margin: 2rem 0;
+    }
+    
+    .empty-state-icon {
+        font-size: 4rem;
+        color: #667eea;
+        margin-bottom: 1rem;
+    }
+    
+    .empty-state h3 {
+        color: #2c3e50;
+        margin-bottom: 1rem;
+    }
+    
+    .empty-state p {
+        color: #7f8c8d;
+        font-size: 1.1rem;
+    }
+    
+    @@media (max-width: 768px) {
+        .bike-list-header h1 {
+            font-size: 2rem;
+        }
+        
+        .bike-list-header {
+            padding: 2rem 0;
+        }
+        
+        .bike-buttons {
+            gap: 0.5rem;
+        }
+        
+        .bike-btn-details,
+        .bike-btn-rent {
+            font-size: 0.9rem;
+            padding: 10px 20px;
+        }
+    }
+</style>
+
+<div class="bike-list-header">
+    <div class="container">
+        <h1>🏍️ Danh Sách Xe Máy</h1>
+        <p>Khám phá bộ sưu tập xe máy chất lượng cao của chúng tôi</p>
+    </div>
+</div>
+
+<div class="container">
     @if(Model == null || !Model.Any())
     {
-        <p class="alert alert-info">Hiện chưa có xe máy nào!!</p>
+        <div class="empty-state">
+            <div class="empty-state-icon">🚫</div>
+            <h3>Chưa có xe máy nào</h3>
+            <p>Hiện tại chúng tôi chưa có xe máy nào trong danh sách. Vui lòng quay lại sau!</p>
+        </div>
     }
     else
     {
-        <div class="row">
+        <div class="row g-4">
             @foreach(var bike in Model)
             {
-                <div class="col-md-4">
-                    <div class="card h-100">
-                        <img src="@bike.ImageUrl" alt="@bike.Name" style="height: 250px; object-fit: cover;" />
-                        <div class="card-body">
-                            <h5 class="card-title">@bike.Name</h5>
-                            <p class="card-text">
-                                <strong>Loại:</strong> @bike.Type<br>
-                                <strong>Hãng:</strong> @bike.Brand<br>
-                                <strong>Năm:</strong> @bike.Year<br>
-                                <strong>Vị trí:</strong> @bike.Location<br>
-                            </p>
-                            <p class="card-text">
-                                <strong>Giá:</strong> 
-                                @if (bike.PricePerHour.HasValue)
+                <div class="col-lg-4 col-md-6 col-sm-12">
+                    <div class="bike-card">
+                        <div class="bike-image-wrapper">
+                            @if (!string.IsNullOrEmpty(bike.ImageUrl))
+                            {
+                                <img src="@bike.ImageUrl" alt="@bike.Name" />
+                            }
+                            else
+                            {
+                                <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #999; font-size: 3rem;">
+                                    🏍️
+                                </div>
+                            }
+                            <div class="bike-status-badge">
+                                ✓ Có sẵn
+                            </div>
+                        </div>
+                        <div class="bike-card-body">
+                            <h5 class="bike-title">@bike.Name</h5>
+                            <div class="bike-info">
+                                @if (!string.IsNullOrEmpty(bike.Type))
                                 {
-                                    <span>@bike.PricePerHour.Value.ToString("N0") VNĐ/giờ</span>
+                                    <div class="bike-info-item">
+                                        <strong>Loại:</strong> <span>@bike.Type</span>
+                                    </div>
                                 }
-                                @if (bike.PricePerDay.HasValue)
+                                @if (!string.IsNullOrEmpty(bike.Brand))
                                 {
-                                    <span> - @bike.PricePerDay.Value.ToString("N0") VNĐ/ngày</span>
+                                    <div class="bike-info-item">
+                                        <strong>Hãng:</strong> <span>@bike.Brand</span>
+                                    </div>
                                 }
-                            </p>
-                            <a href="@Url.Action("Details", "Motorbike", new { id = bike.BikeId })" class="btn btn-primary">Xem chi tiết</a>
+                                @if (bike.Year.HasValue)
+                                {
+                                    <div class="bike-info-item">
+                                        <strong>Năm:</strong> <span>@bike.Year</span>
+                                    </div>
+                                }
+                                @if (!string.IsNullOrEmpty(bike.Location))
+                                {
+                                    <div class="bike-info-item">
+                                        <strong>📍 Vị trí:</strong> <span>@bike.Location</span>
+                                    </div>
+                                }
+                            </div>
+                            
+                            @if (bike.PricePerHour.HasValue || bike.PricePerDay.HasValue)
+                            {
+                                <div class="bike-price">
+                                    <div class="bike-price-label">Giá thuê</div>
+                                    <div class="bike-price-value">
+                                        @if (bike.PricePerHour.HasValue)
+                                        {
+                                            <span>@bike.PricePerHour.Value.ToString("N0")</span>
+                                            <span class="bike-price-unit">VNĐ/giờ</span>
+                                        }
+                                        @if (bike.PricePerDay.HasValue)
+                                        {
+                                            @if (bike.PricePerHour.HasValue) { <span> | </span> }
+                                            <span>@bike.PricePerDay.Value.ToString("N0")</span>
+                                            <span class="bike-price-unit">VNĐ/ngày</span>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                            
+                            <div class="bike-buttons">
+                                <a href="@Url.Action("Details", "Motorbike", new { id = bike.BikeId })" class="bike-btn-details">
+                                    Xem Chi Tiết →
+                                </a>
+                                @if (bike.Status == SmartMotoRental.Models.MotorbikeStatus.Available)
+                                {
+                                    <a href="#" onclick="alert('Tính năng thuê xe sẽ được triển khai sớm!'); return false;" class="bike-btn-rent">
+                                        Thuê Ngay →
+                                    </a>
+                                }
+                            </div>
                         </div>
                     </div>
                 </div>
