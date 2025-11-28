@@ -12,6 +12,7 @@ public class SmartMotoRentalContext : DbContext
     public DbSet<User> Users => Set<User>();
     public DbSet<Motorbike> Motorbikes => Set<Motorbike>();
     public DbSet<Rental> Rentals => Set<Rental>();
+    public DbSet<RentalOrder> RentalOrders => Set<RentalOrder>();
     public DbSet<Favorite> Favorites => Set<Favorite>();
     public DbSet<ReviewRating> ReviewsRatings => Set<ReviewRating>();
     public DbSet<Suggestion> Suggestions => Set<Suggestion>();
