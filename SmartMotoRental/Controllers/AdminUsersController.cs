@@ -1,158 +1,130 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
+using SmartMotoRental.Data;
+using SmartMotoRental.Models;
 using System.Linq;
 using System.Threading.Tasks;
-using SmartMotoRental.Data;       
-using SmartMotoRental.Models;     // Namespace chứa các Model: User, Xe, DonHang
-using SmartMotoRental.ViewModels;
 
 namespace SmartMotoRental.Controllers
 {
-    // [Authorize(Roles = "Admin")]
-    public class AdminController : Controller
+    public class AdminUsersController : Controller
     {
-        private readonly SmartMotoRentalContext _context; 
+        private readonly SmartMotoRentalContext _context;
 
-        public AdminController(SmartMotoRentalContext context)
+        public AdminUsersController(SmartMotoRentalContext context)
         {
             _context = context;
         }
 
-        // ==========================================
-        // PHẦN 1: THỐNG KÊ (DASHBOARD) - Read
-        // ==========================================
-        public async Task<IActionResult> Index()
+        // GET: /AdminUsers
+        public async Task<IActionResult> Index(string search = "", int page = 1, int pageSize = 10)
         {
-            var model = new DashboardViewModel
-            {
-                TotalUsers = await _context.Users.CountAsync(), 
-                TotalBikes = await _context.Xes.CountAsync(), 
-                TotalOrders = await _context.DonHangs.CountAsync(),
-                TotalRevenue = await _context.DonHangs.SumAsync(x => x.TongTien)
-            };
+            var query = _context.Users.AsQueryable();
 
-            var currentYear = DateTime.Now.Year;
-            model.ChartLabels = new List<string>();
-            model.ChartData = new List<decimal>();
-
-            for (int i = 1; i <= 12; i++)
+            if (!string.IsNullOrEmpty(search))
             {
-                model.ChartLabels.Add("Tháng " + i);
-                var revenue = await _context.DonHangs
-                    .Where(d => d.NgayDat.Year == currentYear && d.NgayDat.Month == i)
-                    .SumAsync(d => d.TongTien);
-                model.ChartData.Add(revenue);
+                query = query.Where(u => u.UserName.Contains(search) || u.Email.Contains(search));
             }
 
-            return View(model);
-        }
+            var total = await query.CountAsync();
+            var users = await query
+                .OrderByDescending(u => u.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
 
-        // ==========================================
-        // PHẦN 2: QUẢN LÝ NGƯỜI DÙNG (CRUD)
-        // ==========================================
-        
-        // 2.1 Xem danh sách (Read)
-        public async Task<IActionResult> Users()
-        {
-            var users = await _context.Users.Select(u => new UserViewModel
-            {
-                Id = u.Id.ToString(),
-                UserName = u.UserName,
-                Email = u.Email,
-                PhoneNumber = u.PhoneNumber,
-                IsActive = true 
-            }).ToListAsync();
+            ViewBag.Total = total;
+            ViewBag.Page = page;
+            ViewBag.PageSize = pageSize;
+            ViewBag.Search = search;
 
             return View(users);
         }
 
-        // 2.2 Hiển thị form tạo mới (Create - GET)
-        [HttpGet]
-        public IActionResult CreateUser()
+        // GET: /AdminUsers/Create
+        public IActionResult Create()
         {
-            return View(new UserViewModel());
+            return View();
         }
 
-        // 2.3 Xử lý tạo mới (Create - POST)
+        // POST: /AdminUsers/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateUser(UserViewModel model)
+        public async Task<IActionResult> Create(UserViewModel vm)
         {
-            if (ModelState.IsValid)
-            {
-                // Lưu ý: Cần xử lý hash password nếu dùng ASP.NET Identity. 
-                // Đây là ví dụ đơn giản với EF Core.
-                var newUser = new User 
-                {
-                    UserName = model.UserName,
-                    Email = model.Email,
-                    PhoneNumber = model.PhoneNumber,
-                    // Thêm các trường khác cần thiết (ví dụ: set Role mặc định)
-                };
+            if (!ModelState.IsValid) return View(vm);
 
-                _context.Users.Add(newUser);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Users));
-            }
-            return View(model);
+            var user = new User
+            {
+                UserName = vm.UserName,
+                Email = vm.Email,
+                PhoneNumber = vm.PhoneNumber,
+                Role = vm.Role
+            };
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
-
-        // 2.4 Hiển thị form sửa (Update - GET)
-        [HttpGet]
-        public async Task<IActionResult> EditUser(string id)
+        // GET: /AdminUsers/Edit/5
+        public async Task<IActionResult> Edit(int id)
         {
-            if (id == null) return NotFound();
-
-            var user = await _context.Users.FindAsync(Guid.Parse(id)); 
+            var user = await _context.Users.FindAsync(id);
             if (user == null) return NotFound();
 
-            var model = new UserViewModel
+            var vm = new UserViewModel
             {
-                Id = user.Id.ToString(),
+                Id = user.Id,
                 UserName = user.UserName,
                 Email = user.Email,
                 PhoneNumber = user.PhoneNumber,
-                IsActive = true
+                Role = user.Role
             };
-            return View(model);
+            return View(vm);
         }
 
-        // 2.5 Xử lý sửa (Update - POST)
+        // POST: /AdminUsers/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditUser(UserViewModel model)
+        public async Task<IActionResult> Edit(int id, UserViewModel vm)
         {
-            if (ModelState.IsValid)
-            {
-                var user = await _context.Users.FindAsync(Guid.Parse(model.Id));
-                if (user != null)
-                {
-                    user.Email = model.Email;
-                    user.PhoneNumber = model.PhoneNumber;
-                    
-                    _context.Update(user);
-                    await _context.SaveChangesAsync();
-                    return RedirectToAction(nameof(Users));
-                }
-            }
-            return View(model);
+            if (id != vm.Id) return BadRequest();
+            if (!ModelState.IsValid) return View(vm);
+
+            var user = await _context.Users.FindAsync(id);
+            if (user == null) return NotFound();
+
+            user.UserName = vm.UserName;
+            user.Email = vm.Email;
+            user.PhoneNumber = vm.PhoneNumber;
+            user.Role = vm.Role;
+
+            _context.Update(user);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
-        // 2.6 Xử lý xóa (Delete - POST)
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteUser(string id)
+        // GET: /AdminUsers/Delete/5
+        public async Task<IActionResult> Delete(int id)
         {
-            var user = await _context.Users.FindAsync(Guid.Parse(id));
+            var user = await _context.Users.FindAsync(id);
+            if (user == null) return NotFound();
+            return View(user);
+        }
+
+        // POST: /AdminUsers/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            var user = await _context.Users.FindAsync(id);
             if (user != null)
             {
                 _context.Users.Remove(user);
                 await _context.SaveChangesAsync();
             }
-            return RedirectToAction(nameof(Users));
+            return RedirectToAction(nameof(Index));
         }
     }
 }

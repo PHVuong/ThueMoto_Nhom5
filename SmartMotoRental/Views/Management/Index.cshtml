@@ -1,0 +1,78 @@
+@model SmartMotoRental.ViewModels.DashboardViewModel
+@{
+    ViewData["Title"] = "Thống Kê";
+    Layout = "~/Views/Shared/_Layout.cshtml"; 
+}
+
+<div class="container mt-4">
+    <h2 class="text-center mb-4">Dashboard Quản Lý</h2>
+    
+    <div class="row text-white text-center">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary h-100 py-3">
+                <div class="card-body">
+                    <h3 class="display-4">@Model.TotalUsers</h3>
+                    <p>Thành viên</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success h-100 py-3">
+                <div class="card-body">
+                    <h3>@Model.TotalRevenue.ToString("N0") đ</h3>
+                    <p>Doanh thu</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning h-100 py-3">
+                <div class="card-body">
+                    <h3 class="display-4">@Model.TotalOrders</h3>
+                    <p>Đơn hàng</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-danger h-100 py-3">
+                <div class="card-body">
+                    <h3 class="display-4">@Model.TotalBikes</h3>
+                    <p>Xe máy</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-4 shadow">
+        <div class="card-header bg-white font-weight-bold">
+            Biểu đồ doanh thu năm nay
+        </div>
+        <div class="card-body">
+            <canvas id="revenueChart" style="max-height: 400px;"></canvas>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    var ctx = document.getElementById('revenueChart').getContext('2d');
+    var chartLabels = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.ChartLabels));
+    var chartData = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.ChartData));
+
+    new Chart(ctx, {
+        type: 'bar', // Có thể đổi thành 'line'
+        data: {
+            labels: chartLabels,
+            datasets: [{
+                label: 'Doanh thu (VNĐ)',
+                data: chartData,
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+</script>
