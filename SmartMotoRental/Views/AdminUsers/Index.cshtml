@@ -1,0 +1,65 @@
+@model IEnumerable<SmartMotoRental.Models.User>
+@{
+    ViewData["Title"] = "Quản lý người dùng";
+    var total = ViewBag.Total as int? ?? 0;
+    var page = ViewBag.Page as int? ?? 1;
+    var pageSize = ViewBag.PageSize as int? ?? 10;
+    var search = ViewBag.Search as string ?? "";
+}
+
+<h2 class="mt-3">Quản lý người dùng</h2>
+
+<div class="mb-3">
+    <form class="form-inline" method="get" asp-action="Index">
+        <input type="text" name="search" value="@search" class="form-control mr-2" placeholder="Tìm tên hoặc email" />
+        <button class="btn btn-primary">Tìm</button>
+        <a class="btn btn-success ml-2" asp-action="Create">Tạo mới</a>
+    </form>
+</div>
+
+<p>Tổng: @total người dùng</p>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Role</th>
+            <th>CreatedAt</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach(var u in Model)
+    {
+        <tr>
+            <td>@u.Id</td>
+            <td>@u.UserName</td>
+            <td>@u.Email</td>
+            <td>@u.PhoneNumber</td>
+            <td>@u.Role</td>
+            <td>@u.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+            <td>
+                <a class="btn btn-sm btn-primary" asp-action="Edit" asp-route-id="@u.Id">Sửa</a>
+                <a class="btn btn-sm btn-danger" asp-action="Delete" asp-route-id="@u.Id">Xóa</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+<nav>
+    <ul class="pagination">
+        @{
+            var totalPages = (int)Math.Ceiling((double)total / pageSize);
+            for (int p = 1; p <= totalPages; p++)
+            {
+                <li class="page-item @(p==page ? "active" : "")">
+                    <a class="page-link" asp-action="Index" asp-route-page="@p" asp-route-search="@search">@p</a>
+                </li>
+            }
+        }
+    </ul>
+</nav>
