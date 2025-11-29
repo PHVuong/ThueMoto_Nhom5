@@ -9,9 +9,9 @@ namespace SmartMotoRental.Controllers
     [Authorize(Roles = "Admin")]
     public class AdminRentalController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly SmartMotoRentalContext _context;
 
-        public AdminRentalController(ApplicationDbContext context)
+        public AdminRentalController(SmartMotoRentalContext context)
         {
             _context = context;
         }

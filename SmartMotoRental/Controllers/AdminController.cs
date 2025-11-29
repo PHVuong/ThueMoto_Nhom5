@@ -28,9 +28,11 @@ namespace SmartMotoRental.Controllers
             var model = new DashboardViewModel
             {
                 TotalUsers = await _context.Users.CountAsync(), 
-                TotalBikes = await _context.Xes.CountAsync(), 
-                TotalOrders = await _context.DonHangs.CountAsync(),
-                TotalRevenue = await _context.DonHangs.SumAsync(x => x.TongTien)
+                TotalBikes = await _context.Motorbikes.CountAsync(), 
+                TotalOrders = await _context.Rentals.CountAsync(),
+                TotalRevenue = await _context.Rentals
+                    .Where(r => r.TotalPrice.HasValue)
+                    .SumAsync(r => r.TotalPrice.Value)
             };
 
             var currentYear = DateTime.Now.Year;
@@ -40,9 +42,9 @@ namespace SmartMotoRental.Controllers
             for (int i = 1; i <= 12; i++)
             {
                 model.ChartLabels.Add("Tháng " + i);
-                var revenue = await _context.DonHangs
-                    .Where(d => d.NgayDat.Year == currentYear && d.NgayDat.Month == i)
-                    .SumAsync(d => d.TongTien);
+                var revenue = await _context.Rentals
+                    .Where(r => r.CreatedAt.Year == currentYear && r.CreatedAt.Month == i && r.TotalPrice.HasValue)
+                    .SumAsync(r => r.TotalPrice.Value);
                 model.ChartData.Add(revenue);
             }
 
@@ -58,10 +60,10 @@ namespace SmartMotoRental.Controllers
         {
             var users = await _context.Users.Select(u => new UserViewModel
             {
-                Id = u.Id.ToString(),
-                UserName = u.UserName,
+                Id = u.UserId.ToString(),
+                FullName = u.FullName,
                 Email = u.Email,
-                PhoneNumber = u.PhoneNumber,
+                Phone = u.Phone,
                 IsActive = true 
             }).ToListAsync();
 
@@ -82,14 +84,15 @@ namespace SmartMotoRental.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Lưu ý: Cần xử lý hash password nếu dùng ASP.NET Identity. 
-                // Đây là ví dụ đơn giản với EF Core.
+                // Lưu ý: Cần xử lý hash password. Tạm thời để mặc định.
+                // TODO: Implement password hashing và password input trong form
                 var newUser = new User 
                 {
-                    UserName = model.UserName,
+                    FullName = model.FullName,
                     Email = model.Email,
-                    PhoneNumber = model.PhoneNumber,
-                    // Thêm các trường khác cần thiết (ví dụ: set Role mặc định)
+                    Phone = model.Phone,
+                    PasswordHash = "TEMP_PASSWORD_HASH", // TODO: Hash password thật
+                    Role = UserRole.Customer // Mặc định là Customer
                 };
 
                 _context.Users.Add(newUser);
@@ -104,17 +107,18 @@ namespace SmartMotoRental.Controllers
         [HttpGet]
         public async Task<IActionResult> EditUser(string id)
         {
-            if (id == null) return NotFound();
+            if (id == null || !int.TryParse(id, out int userId)) 
+                return NotFound();
 
-            var user = await _context.Users.FindAsync(Guid.Parse(id)); 
+            var user = await _context.Users.FindAsync(userId); 
             if (user == null) return NotFound();
 
             var model = new UserViewModel
             {
-                Id = user.Id.ToString(),
-                UserName = user.UserName,
+                Id = user.UserId.ToString(),
+                FullName = user.FullName,
                 Email = user.Email,
-                PhoneNumber = user.PhoneNumber,
+                Phone = user.Phone,
                 IsActive = true
             };
             return View(model);
@@ -127,15 +131,19 @@ namespace SmartMotoRental.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = await _context.Users.FindAsync(Guid.Parse(model.Id));
-                if (user != null)
+                if (int.TryParse(model.Id, out int userId))
                 {
-                    user.Email = model.Email;
-                    user.PhoneNumber = model.PhoneNumber;
-                    
-                    _context.Update(user);
-                    await _context.SaveChangesAsync();
-                    return RedirectToAction(nameof(Users));
+                    var user = await _context.Users.FindAsync(userId);
+                    if (user != null)
+                    {
+                        user.FullName = model.FullName;
+                        user.Email = model.Email;
+                        user.Phone = model.Phone;
+                        
+                        _context.Update(user);
+                        await _context.SaveChangesAsync();
+                        return RedirectToAction(nameof(Users));
+                    }
                 }
             }
             return View(model);
@@ -146,11 +154,14 @@ namespace SmartMotoRental.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteUser(string id)
         {
-            var user = await _context.Users.FindAsync(Guid.Parse(id));
-            if (user != null)
+            if (int.TryParse(id, out int userId))
             {
-                _context.Users.Remove(user);
-                await _context.SaveChangesAsync();
+                var user = await _context.Users.FindAsync(userId);
+                if (user != null)
+                {
+                    _context.Users.Remove(user);
+                    await _context.SaveChangesAsync();
+                }
             }
             return RedirectToAction(nameof(Users));
         }

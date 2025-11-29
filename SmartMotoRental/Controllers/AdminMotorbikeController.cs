@@ -9,10 +9,10 @@ namespace SmartMotoRental.Controllers
     [Authorize(Roles = "Admin")]
     public class AdminMotorbikeController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly SmartMotoRentalContext _context;
         private readonly IWebHostEnvironment _hostEnvironment;
 
-        public AdminMotorbikeController(ApplicationDbContext context, IWebHostEnvironment hostEnvironment)
+        public AdminMotorbikeController(SmartMotoRentalContext context, IWebHostEnvironment hostEnvironment)
         {
             _context = context;
             _hostEnvironment = hostEnvironment;

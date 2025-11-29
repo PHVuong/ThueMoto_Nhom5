@@ -17,9 +17,10 @@ public enum ChatSender
 public enum RentalStatus
 {
     Pending = 0,     // Đơn hàng đang chờ xử lý
-    Active = 1,      // Đơn hàng đang được thuê
-    Completed = 2,   // Đơn hàng đã hoàn thành
-    Cancelled = 3    // Đơn hàng đã hủy
+    Confirmed = 1,   // Đơn hàng đã được duyệt, chờ lấy xe
+    Active = 2,      // Đơn hàng đang được thuê
+    Completed = 3,   // Đơn hàng đã hoàn thành
+    Cancelled = 4    // Đơn hàng đã hủy
 }
 
 public enum PaymentMethod
