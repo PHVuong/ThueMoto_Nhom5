@@ -14,7 +14,7 @@
         <table class="table table-bordered table-hover">
             <thead class="thead-dark">
                 <tr>
-                    <th>Tên đăng nhập</th>
+                    <th>Họ tên</th>
                     <th>Email</th>
                     <th>SĐT</th>
                     <th style="width: 180px;">Hành động</th>
@@ -24,9 +24,9 @@
                 @foreach (var user in Model)
                 {
                     <tr>
-                        <td>@user.UserName</td>
+                        <td>@user.FullName</td>
                         <td>@user.Email</td>
-                        <td>@user.PhoneNumber</td>
+                        <td>@user.Phone</td>
                         <td>
                             <a asp-action="EditUser" asp-route-id="@user.Id" class="btn btn-sm btn-primary">Sửa</a>
                             
