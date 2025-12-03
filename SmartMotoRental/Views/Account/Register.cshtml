@@ -1,0 +1,184 @@
+@{
+    ViewData["Title"] = "Đăng Ký";
+}
+
+<style>
+    .auth-container {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 0;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+    
+    .auth-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        padding: 3rem;
+        width: 100%;
+        max-width: 500px;
+    }
+    
+    .auth-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .auth-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+    
+    .auth-header p {
+        color: #7f8c8d;
+        font-size: 1rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        outline: none;
+    }
+    
+    .btn-register {
+        width: 100%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        padding: 12px 30px;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        margin-bottom: 1rem;
+    }
+    
+    .btn-register:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        color: white;
+    }
+    
+    .auth-footer {
+        text-align: center;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #e9ecef;
+    }
+    
+    .auth-footer a {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 600;
+    }
+    
+    .auth-footer a:hover {
+        text-decoration: underline;
+    }
+    
+    .password-requirements {
+        font-size: 0.85rem;
+        color: #7f8c8d;
+        margin-top: 0.25rem;
+    }
+</style>
+
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1>🚀 Đăng Ký</h1>
+            <p>Tạo tài khoản mới để bắt đầu</p>
+        </div>
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+            </div>
+        }
+
+        <form asp-action="Register" method="post">
+            @Html.AntiForgeryToken()
+            
+            <div class="form-group">
+                <label class="form-label" for="fullName">Họ và Tên *</label>
+                <input type="text" id="fullName" name="fullName" class="form-control" 
+                       placeholder="Nhập họ và tên" required />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="email">Email *</label>
+                <input type="email" id="email" name="email" class="form-control" 
+                       placeholder="example@email.com" required />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="phone">Số Điện Thoại</label>
+                <input type="tel" id="phone" name="phone" class="form-control" 
+                       placeholder="0901234567" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="password">Mật khẩu *</label>
+                <input type="password" id="password" name="password" class="form-control" 
+                       placeholder="Tối thiểu 6 ký tự" required minlength="6" />
+                <div class="password-requirements">Mật khẩu phải có ít nhất 6 ký tự</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="confirmPassword">Xác nhận mật khẩu *</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" 
+                       placeholder="Nhập lại mật khẩu" required minlength="6" />
+            </div>
+
+            <button type="submit" class="btn btn-register">
+                Đăng Ký
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            <p>Đã có tài khoản? <a asp-action="Login">Đăng nhập ngay</a></p>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Kiểm tra mật khẩu khớp
+    document.getElementById('confirmPassword').addEventListener('input', function() {
+        const password = document.getElementById('password').value;
+        const confirmPassword = this.value;
+        
+        if (password !== confirmPassword && confirmPassword.length > 0) {
+            this.setCustomValidity('Mật khẩu xác nhận không khớp');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+</script>
+

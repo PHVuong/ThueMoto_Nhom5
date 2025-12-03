@@ -9,6 +9,21 @@ public class SmartMotoRentalContext : DbContext
     {
     }
 
+
+    public override int SaveChanges()
+    {
+        // Bật foreign keys trước khi save
+        Database.ExecuteSqlRaw("PRAGMA foreign_keys = ON;");
+        return base.SaveChanges();
+    }
+
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        // Bật foreign keys trước khi save
+        await Database.ExecuteSqlRawAsync("PRAGMA foreign_keys = ON;", cancellationToken);
+        return await base.SaveChangesAsync(cancellationToken);
+    }
+
     public DbSet<User> Users => Set<User>();
     public DbSet<Motorbike> Motorbikes => Set<Motorbike>();
     public DbSet<Rental> Rentals => Set<Rental>();

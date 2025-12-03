@@ -1,0 +1,409 @@
+@model SmartMotoRental.Models.Rental
+@{
+    ViewData["Title"] = "Chi Tiết Đơn Thuê";
+    
+    var statusText = Model.Status switch
+    {
+        RentalStatus.Pending => "Đang chờ duyệt",
+        RentalStatus.Confirmed => "Đã xác nhận",
+        RentalStatus.Active => "Đang thuê",
+        RentalStatus.Completed => "Đã hoàn thành",
+        RentalStatus.Cancelled => "Đã hủy",
+        _ => Model.Status.ToString()
+    };
+    
+    var statusClass = Model.Status switch
+    {
+        RentalStatus.Pending => "status-pending",
+        RentalStatus.Confirmed => "status-confirmed",
+        RentalStatus.Active => "status-active",
+        RentalStatus.Completed => "status-completed",
+        RentalStatus.Cancelled => "status-cancelled",
+        _ => "status-pending"
+    };
+    
+    var paymentMethodText = Model.PaymentMethod switch
+    {
+        PaymentMethod.Cash => "Tiền mặt",
+        PaymentMethod.Card => "Thẻ",
+        PaymentMethod.BankTransfer => "Chuyển khoản",
+        PaymentMethod.EWallet => "Ví điện tử",
+        _ => "Chưa thanh toán"
+    };
+}
+
+<style>
+    .detail-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 0 0 30px 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .detail-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    }
+    
+    .detail-card h3 {
+        color: #2c3e50;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 3px solid #667eea;
+    }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .info-item {
+        display: flex;
+        align-items: flex-start;
+    }
+    
+    .info-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+    
+    .info-content {
+        flex: 1;
+    }
+    
+    .info-label {
+        font-size: 0.85rem;
+        color: #7f8c8d;
+        margin-bottom: 0.25rem;
+    }
+    
+    .info-value {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .status-badge {
+        padding: 10px 25px;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 1rem;
+        display: inline-block;
+    }
+    
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    .status-confirmed {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+    
+    .status-active {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .status-completed {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .status-cancelled {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .bike-image {
+        width: 100%;
+        max-width: 400px;
+        height: 300px;
+        object-fit: cover;
+        border-radius: 15px;
+        margin-bottom: 1rem;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+    
+    .btn-action {
+        padding: 12px 30px;
+        border-radius: 25px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .btn-back {
+        background: #6c757d;
+        color: white;
+    }
+    
+    .btn-back:hover {
+        background: #5a6268;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(108, 117, 125, 0.3);
+        color: white;
+    }
+    
+    .btn-cancel {
+        background: #dc3545;
+        color: white;
+    }
+    
+    .btn-cancel:hover {
+        background: #c82333;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+        color: white;
+    }
+</style>
+
+<div class="detail-header">
+    <div class="container">
+        <h1>📋 Chi Tiết Đơn Thuê #@Model.RentalId</h1>
+        <p style="opacity: 0.9; margin: 0;">Thông tin chi tiết về đơn thuê của bạn</p>
+    </div>
+</div>
+
+<div class="container">
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">
+            <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+        </div>
+    }
+    
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+        </div>
+    }
+
+    <div class="detail-card">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3>Trạng Thái Đơn Thuê</h3>
+            <span class="status-badge @statusClass">@statusText</span>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="detail-card">
+                <h3>📅 Thông Tin Thời Gian</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-icon">📅</div>
+                        <div class="info-content">
+                            <div class="info-label">Ngày nhận xe</div>
+                            <div class="info-value">@(Model.PickupTime?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">📅</div>
+                        <div class="info-content">
+                            <div class="info-label">Ngày trả xe</div>
+                            <div class="info-value">@(Model.ReturnTime?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">⏰</div>
+                        <div class="info-content">
+                            <div class="info-label">Ngày tạo đơn</div>
+                            <div class="info-value">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+                        </div>
+                    </div>
+                    
+                    @if (Model.PaymentPaidAt.HasValue)
+                    {
+                        <div class="info-item">
+                            <div class="info-icon">💳</div>
+                            <div class="info-content">
+                                <div class="info-label">Ngày thanh toán</div>
+                                <div class="info-value">@Model.PaymentPaidAt.Value.ToString("dd/MM/yyyy HH:mm")</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="detail-card">
+                <h3>🏍️ Thông Tin Xe Máy</h3>
+                @if (Model.Motorbike != null)
+                {
+                    <div class="row">
+                        <div class="col-md-4">
+                            @if (!string.IsNullOrEmpty(Model.Motorbike.ImageUrl))
+                            {
+                                <img src="@Model.Motorbike.ImageUrl" alt="@Model.Motorbike.Name" class="bike-image" />
+                            }
+                            else
+                            {
+                                <div style="width: 100%; max-width: 400px; height: 300px; background: #f0f0f0; border-radius: 15px; display: flex; align-items: center; justify-content: center; font-size: 5rem;">
+                                    🏍️
+                                </div>
+                            }
+                        </div>
+                        <div class="col-md-8">
+                            <h4>@Model.Motorbike.Name</h4>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <div class="info-icon">🏷️</div>
+                                    <div class="info-content">
+                                        <div class="info-label">Loại</div>
+                                        <div class="info-value">@(Model.Motorbike.Type ?? "N/A")</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="info-item">
+                                    <div class="info-icon">🏭</div>
+                                    <div class="info-content">
+                                        <div class="info-label">Hãng</div>
+                                        <div class="info-value">@(Model.Motorbike.Brand ?? "N/A")</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="info-item">
+                                    <div class="info-icon">📅</div>
+                                    <div class="info-content">
+                                        <div class="info-label">Năm</div>
+                                        <div class="info-value">@(Model.Motorbike.Year?.ToString() ?? "N/A")</div>
+                                    </div>
+                                </div>
+                                
+                                @if (!string.IsNullOrEmpty(Model.Motorbike.PlateNumber))
+                                {
+                                    <div class="info-item">
+                                        <div class="info-icon">🔢</div>
+                                        <div class="info-content">
+                                            <div class="info-label">Biển số</div>
+                                            <div class="info-value">@Model.Motorbike.PlateNumber</div>
+                                        </div>
+                                    </div>
+                                }
+                                
+                                @if (!string.IsNullOrEmpty(Model.Motorbike.Location))
+                                {
+                                    <div class="info-item">
+                                        <div class="info-icon">📍</div>
+                                        <div class="info-content">
+                                            <div class="info-label">Vị trí</div>
+                                            <div class="info-value">@Model.Motorbike.Location</div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted">Không có thông tin xe máy</p>
+                }
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="detail-card">
+                <h3>💰 Thông Tin Thanh Toán</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-icon">💰</div>
+                        <div class="info-content">
+                            <div class="info-label">Tổng tiền</div>
+                            <div class="info-value" style="font-size: 1.3rem; color: #667eea;">
+                                @(Model.TotalPrice?.ToString("N0") ?? "0") VNĐ
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">💳</div>
+                        <div class="info-content">
+                            <div class="info-label">Phương thức thanh toán</div>
+                            <div class="info-value">@paymentMethodText</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-card">
+                <h3>👤 Thông Tin Khách Hàng</h3>
+                @if (Model.User != null)
+                {
+                    <div class="info-item">
+                        <div class="info-icon">👤</div>
+                        <div class="info-content">
+                            <div class="info-label">Họ và tên</div>
+                            <div class="info-value">@Model.User.FullName</div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">📧</div>
+                        <div class="info-content">
+                            <div class="info-label">Email</div>
+                            <div class="info-value">@Model.User.Email</div>
+                        </div>
+                    </div>
+                    
+                    @if (!string.IsNullOrEmpty(Model.User.Phone))
+                    {
+                        <div class="info-item">
+                            <div class="info-icon">📱</div>
+                            <div class="info-content">
+                                <div class="info-label">Số điện thoại</div>
+                                <div class="info-value">@Model.User.Phone</div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="action-buttons">
+        <a href="@Url.Action("Index", "MyRentals")" class="btn-action btn-back">
+            ← Quay Lại Danh Sách
+        </a>
+        @if (Model.Status == RentalStatus.Pending || Model.Status == RentalStatus.Confirmed)
+        {
+            <form asp-action="Cancel" method="post" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn thuê này?');">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.RentalId" />
+                <button type="submit" class="btn-action btn-cancel">
+                    Hủy Đơn Thuê
+                </button>
+            </form>
+        }
+    </div>
+</div>
+

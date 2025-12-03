@@ -5,61 +5,647 @@
     var page = ViewBag.Page as int? ?? 1;
     var pageSize = ViewBag.PageSize as int? ?? 10;
     var search = ViewBag.Search as string ?? "";
+    var status = ViewBag.Status as string ?? "";
+    
+    var totalUsers = ViewBag.TotalUsers as int? ?? 0;
+    var userGrowthPercent = ViewBag.UserGrowthPercent as int? ?? 0;
+    var totalRentals = ViewBag.TotalRentals as int? ?? 0;
+    var rentalGrowthPercent = ViewBag.RentalGrowthPercent as int? ?? 0;
+    var totalRevenue = ViewBag.TotalRevenue as decimal? ?? 0;
+    var revenueGrowthPercent = ViewBag.RevenueGrowthPercent as int? ?? 0;
+    var avgRevenuePerUser = ViewBag.AvgRevenuePerUser as decimal? ?? 0;
+    var avgRevenueGrowthPercent = ViewBag.AvgRevenueGrowthPercent as int? ?? 0;
+    
 }
 
-<h2 class="mt-3">Quản lý người dùng</h2>
+<style>
+    .stats-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        transition: transform 0.3s ease;
+        height: 100%;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.12);
+    }
+    
+    .stats-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+    }
+    
+    .stats-icon.purple { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .stats-icon.pink { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+    .stats-icon.yellow { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); }
+    .stats-icon.blue { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+    
+    .stats-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stats-label {
+        font-size: 0.9rem;
+        color: #7f8c8d;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stats-growth {
+        font-size: 0.85rem;
+        color: #28a745;
+        font-weight: 600;
+    }
+    
+    .chart-card {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        margin-bottom: 2rem;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        max-width: 100%;
+        overflow: hidden;
+    }
+    
+    .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        flex-shrink: 0;
+    }
+    
+    .chart-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .chart-select {
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    /* Container cho canvas để đảm bảo charts hiển thị đúng */
+    .chart-container {
+        position: relative;
+        width: 100%;
+        max-width: 100%;
+        height: 300px;
+        min-height: 300px;
+        max-height: 300px;
+        flex: 1 0 auto;
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+    
+    .chart-container canvas {
+        max-width: 100% !important;
+        max-height: 100% !important;
+        display: block;
+        box-sizing: border-box;
+        /* Không set width: 100% để Chart.js tự quản lý */
+    }
+    
+    /* Đảm bảo row chứa charts không bị overflow */
+    .row.g-4 {
+        max-width: 100%;
+        overflow: hidden;
+    }
+    
+    .users-table {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+    
+    .table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .search-filter-bar {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .search-input {
+        flex: 1;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    
+    .status-active {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        margin-right: 0.75rem;
+    }
+    
+    .user-info {
+        display: flex;
+        align-items: center;
+    }
+    
+    .action-link {
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 500;
+        margin-right: 0.5rem;
+    }
+    
+    .action-link.details {
+        background: #e7f3ff;
+        color: #0066cc;
+    }
+    
+    .action-link.delete {
+        background: #ffe7e7;
+        color: #cc0000;
+    }
+    
+    .export-buttons {
+        display: flex;
+        gap: 0.75rem;
+    }
+    
+    .btn-export {
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
+        border: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-export.csv {
+        background: #28a745;
+        color: white;
+    }
+    
+    .btn-export.excel {
+        background: #007bff;
+        color: white;
+    }
+    
+    .btn-export:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+</style>
 
-<div class="mb-3">
-    <form class="form-inline" method="get" asp-action="Index">
-        <input type="text" name="search" value="@search" class="form-control mr-2" placeholder="Tìm tên hoặc email" />
-        <button class="btn btn-primary">Tìm</button>
-        <a class="btn btn-success ml-2" asp-action="Create">Tạo mới</a>
-    </form>
+<div class="container mt-4">
+    <!-- Header với nút xuất -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1" style="font-weight: 700; color: #2c3e50;">Quản lý người dùng</h2>
+            <p class="text-muted mb-0">Thống kê và quản lý người dùng hệ thống</p>
+        </div>
+        <div class="export-buttons">
+            <a href="@Url.Action("ExportCsv")" class="btn-export csv">
+                📄 Xuất CSV
+            </a>
+            <a href="@Url.Action("ExportExcel")" class="btn-export excel">
+                📊 Xuất Excel
+            </a>
+        </div>
+    </div>
+
+    <!-- 4 Thẻ thống kê -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card">
+                <div class="stats-icon purple">
+                    👥
+                </div>
+                <div class="stats-value">@totalUsers.ToString("N0")</div>
+                <div class="stats-label">Tổng người dùng</div>
+                <div class="stats-growth">+@userGrowthPercent% so với tháng trước</div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card">
+                <div class="stats-icon pink">
+                    🏍️
+                </div>
+                <div class="stats-value">@totalRentals.ToString("N0")</div>
+                <div class="stats-label">Tổng lượt thuê</div>
+                <div class="stats-growth">+@rentalGrowthPercent% so với tháng trước</div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card">
+                <div class="stats-icon yellow">
+                    💰
+                </div>
+                <div class="stats-value">₫@((totalRevenue / 1000000000m).ToString("F1"))B</div>
+                <div class="stats-label">Tổng doanh thu</div>
+                <div class="stats-growth">+@revenueGrowthPercent% so với tháng trước</div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="stats-card">
+                <div class="stats-icon blue">
+                    📈
+                </div>
+                <div class="stats-value">₫@((avgRevenuePerUser / 1000m).ToString("N0"))K</div>
+                <div class="stats-label">Doanh thu người</div>
+                <div class="stats-growth">+@avgRevenueGrowthPercent% so với tháng trước</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3 Biểu đồ -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-4 col-md-12">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">Thống kê thuê xe máy</div>
+                    <select class="chart-select" id="rentalPeriod">
+                        <option value="7">7 ngày qua</option>
+                        <option value="30">30 ngày qua</option>
+                    </select>
+                </div>
+                <div class="chart-container">
+                    <canvas id="rentalChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-12">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">Doanh thu theo tháng</div>
+                    <select class="chart-select" id="revenueYear">
+                        <option value="@DateTime.Now.Year">@DateTime.Now.Year</option>
+                        <option value="@(DateTime.Now.Year - 1)">@(DateTime.Now.Year - 1)</option>
+                    </select>
+                </div>
+                <div class="chart-container">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-12">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">Xe máy phổ biến</div>
+                    <select class="chart-select" id="popularPeriod">
+                        <option value="week">Tuần này</option>
+                        <option value="month" selected>Tháng này</option>
+                        <option value="year">Năm nay</option>
+                    </select>
+                </div>
+                <div class="chart-container">
+                    <canvas id="popularChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bảng danh sách người dùng -->
+    <div class="users-table">
+        <div class="table-header">
+            <h3 class="mb-0" style="font-weight: 600; color: #2c3e50;">Danh sách người dùng</h3>
+        </div>
+        
+        <div class="search-filter-bar">
+            <input type="text" class="search-input" id="searchInput" placeholder="🔍 Tìm kiếm..." value="@search" />
+            <select class="chart-select" id="statusFilter" style="width: 200px;">
+                <option value="">Tất cả trạng thái</option>
+                @if (status == "active")
+                {
+                    <option value="active" selected>Hoạt động</option>
+                }
+                else
+                {
+                    <option value="active">Hoạt động</option>
+                }
+            </select>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>NGƯỜI DÙNG</th>
+                        <th>LIÊN HỆ</th>
+                        <th>SỐ LẦN THUÊ</th>
+                        <th>TỔNG CHI TIÊU</th>
+                        <th>TRẠNG THÁI</th>
+                        <th>HÀNH ĐỘNG</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach(var user in Model)
+                    {
+                        var rentalCount = user.Rentals?.Count(r => r.Status == SmartMotoRental.Models.RentalStatus.Completed) ?? 0;
+                        var totalSpending = user.Rentals?
+                            .Where(r => r.Status == SmartMotoRental.Models.RentalStatus.Completed && r.TotalPrice.HasValue)
+                            .Sum(r => r.TotalPrice ?? 0) ?? 0m;
+                        var avgSpending = rentalCount > 0 ? totalSpending / rentalCount : 0m;
+                        var avgRating = user.Reviews?.Any() == true ? user.Reviews.Average(r => (decimal)r.Rating) : 0m;
+                        
+                        <tr>
+                            <td>
+                                <div class="user-info">
+                                    <div class="user-avatar">
+                                        @(user.FullName.Substring(0, 1).ToUpper())
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 600; color: #2c3e50;">@user.FullName</div>
+                                        <small class="text-muted">ID: #@user.UserId.ToString("D4")</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div>@user.Email</div>
+                                <small class="text-muted">@(user.Phone ?? "Chưa có")</small>
+                            </td>
+                            <td>
+                                <div style="font-weight: 600;">@rentalCount lần</div>
+                                @if (avgRating > 0)
+                                {
+                                    <small class="text-muted">⭐ @avgRating.ToString("F1")/5</small>
+                                }
+                            </td>
+                            <td>
+                                <div style="font-weight: 600; color: #28a745;">₫@totalSpending.ToString("N0")</div>
+                                @if (rentalCount > 0)
+                                {
+                                    <small class="text-muted">₫@avgSpending.ToString("N0")/lần</small>
+                                }
+                            </td>
+                            <td>
+                                <span class="status-badge status-active">Hoạt động</span>
+                            </td>
+                            <td>
+                                <a href="@Url.Action("Edit", new { id = user.UserId })" class="action-link details">Chi tiết</a>
+                                <a href="@Url.Action("Delete", new { id = user.UserId })" class="action-link delete">Xóa</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        @if (total > pageSize)
+        {
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    @{
+                        var totalPages = (int)Math.Ceiling((double)total / pageSize);
+                        for (int p = 1; p <= totalPages; p++)
+                        {
+                            <li class="page-item @(p == page ? "active" : "")">
+                                <a class="page-link" href="@Url.Action("Index", new { page = p, search = search, status = status })">@p</a>
+                            </li>
+                        }
+                    }
+                </ul>
+            </nav>
+        }
+    </div>
 </div>
 
-<p>Tổng: @total người dùng</p>
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Biểu đồ thống kê thuê xe máy
+        let rentalChart;
+        async function loadRentalChart(days = 7) {
+            const response = await fetch('@Url.Action("GetRentalStats")?days=' + days);
+            const data = await response.json();
+            
+            const ctx = document.getElementById('rentalChart').getContext('2d');
+            if (rentalChart) rentalChart.destroy();
+            
+            rentalChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map(d => d.label),
+                    datasets: [{
+                        label: 'Lượt thuê',
+                        data: data.map(d => d.count),
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    resizeDelay: 0,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    },
+                    layout: {
+                        padding: {
+                            left: 0,
+                            right: 0,
+                            top: 0,
+                            bottom: 0
+                        }
+                    }
+                }
+            });
+        }
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Id</th>
-            <th>Họ tên</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Role</th>
-            <th>CreatedAt</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-    @foreach(var u in Model)
-    {
-        <tr>
-            <td>@u.UserId</td>
-            <td>@u.FullName</td>
-            <td>@u.Email</td>
-            <td>@u.Phone</td>
-            <td>@u.Role</td>
-            <td>@u.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
-            <td>
-                <a class="btn btn-sm btn-primary" asp-action="Edit" asp-route-id="@u.UserId">Sửa</a>
-                <a class="btn btn-sm btn-danger" asp-action="Delete" asp-route-id="@u.UserId">Xóa</a>
-            </td>
-        </tr>
-    }
-    </tbody>
-</table>
+        // Biểu đồ doanh thu theo tháng
+        let revenueChart;
+        async function loadRevenueChart(year = @DateTime.Now.Year) {
+            const response = await fetch('@Url.Action("GetRevenueByMonth")?year=' + year);
+            const data = await response.json();
+            
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            if (revenueChart) revenueChart.destroy();
+            
+            revenueChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.map(d => d.label),
+                    datasets: [{
+                        label: 'Doanh thu (triệu VNĐ)',
+                        data: data.map(d => d.revenue),
+                        backgroundColor: '#28a745',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    resizeDelay: 0,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    },
+                    layout: {
+                        padding: {
+                            left: 0,
+                            right: 0,
+                            top: 0,
+                            bottom: 0
+                        }
+                    }
+                }
+            });
+        }
 
-<nav>
-    <ul class="pagination">
-        @{
-            var totalPages = (int)Math.Ceiling((double)total / pageSize);
-            for (int p = 1; p <= totalPages; p++)
-            {
-                <li class="page-item @(p==page ? "active" : "")">
-                    <a class="page-link" asp-action="Index" asp-route-page="@p" asp-route-search="@search">@p</a>
-                </li>
+        // Biểu đồ xe máy phổ biến
+        let popularChart;
+        async function loadPopularChart(period = 'month') {
+            const response = await fetch('@Url.Action("GetPopularBikes")?period=' + period);
+            const data = await response.json();
+            
+            const ctx = document.getElementById('popularChart').getContext('2d');
+            if (popularChart) popularChart.destroy();
+            
+            const colors = ['#667eea', '#28a745', '#fda085', '#dc3545', '#764ba2', '#6c757d'];
+            
+            popularChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.map(d => d.name),
+                    datasets: [{
+                        data: data.map(d => d.count),
+                        backgroundColor: colors.slice(0, data.length)
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    resizeDelay: 0,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    layout: {
+                        padding: {
+                            left: 0,
+                            right: 0,
+                            top: 0,
+                            bottom: 0
+                        }
+                    }
+                }
+            });
+        }
+
+        // Hàm resize charts để tránh bị kéo dài vô hạn
+        function resizeCharts() {
+            if (rentalChart) {
+                rentalChart.resize();
+            }
+            if (revenueChart) {
+                revenueChart.resize();
+            }
+            if (popularChart) {
+                popularChart.resize();
             }
         }
-    </ul>
-</nav>
+
+        // Load charts khi trang load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Đợi một chút để đảm bảo DOM đã render xong
+            setTimeout(function() {
+                loadRentalChart();
+                loadRevenueChart();
+                loadPopularChart();
+                
+                // Resize charts sau khi load
+                setTimeout(resizeCharts, 100);
+            }, 100);
+
+            // Event listeners cho dropdowns
+            document.getElementById('rentalPeriod').addEventListener('change', function() {
+                loadRentalChart(this.value);
+                setTimeout(resizeCharts, 100);
+            });
+
+            document.getElementById('revenueYear').addEventListener('change', function() {
+                loadRevenueChart(this.value);
+                setTimeout(resizeCharts, 100);
+            });
+
+            document.getElementById('popularPeriod').addEventListener('change', function() {
+                loadPopularChart(this.value);
+                setTimeout(resizeCharts, 100);
+            });
+
+            // Resize charts khi window resize
+            let resizeTimeout;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(resizeCharts, 250);
+            });
+
+            // Tìm kiếm
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const search = this.value;
+                    const status = document.getElementById('statusFilter').value;
+                    window.location.href = '@Url.Action("Index")?search=' + encodeURIComponent(search) + '&status=' + status;
+                }
+            });
+
+            document.getElementById('statusFilter').addEventListener('change', function() {
+                const search = document.getElementById('searchInput').value;
+                const status = this.value;
+                window.location.href = '@Url.Action("Index")?search=' + encodeURIComponent(search) + '&status=' + status;
+            });
+        });
+    </script>
+}

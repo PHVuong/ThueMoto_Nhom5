@@ -25,26 +25,36 @@ namespace SmartMotoRental.Controllers
         // ==========================================
         public async Task<IActionResult> Index()
         {
+            // Load dữ liệu về client rồi tính tổng (SQLite không hỗ trợ Sum trên decimal)
+            var rentalsWithPrice = await _context.Rentals
+                .Where(r => r.TotalPrice.HasValue)
+                .Select(r => r.TotalPrice.Value)
+                .ToListAsync();
+
             var model = new DashboardViewModel
             {
                 TotalUsers = await _context.Users.CountAsync(), 
                 TotalBikes = await _context.Motorbikes.CountAsync(), 
                 TotalOrders = await _context.Rentals.CountAsync(),
-                TotalRevenue = await _context.Rentals
-                    .Where(r => r.TotalPrice.HasValue)
-                    .SumAsync(r => r.TotalPrice.Value)
+                TotalRevenue = rentalsWithPrice.Sum()
             };
 
             var currentYear = DateTime.Now.Year;
             model.ChartLabels = new List<string>();
             model.ChartData = new List<decimal>();
 
+            // Load tất cả rentals của năm hiện tại
+            var yearRentals = await _context.Rentals
+                .Where(r => r.CreatedAt.Year == currentYear && r.TotalPrice.HasValue)
+                .Select(r => new { r.CreatedAt.Month, r.TotalPrice })
+                .ToListAsync();
+
             for (int i = 1; i <= 12; i++)
             {
                 model.ChartLabels.Add("Tháng " + i);
-                var revenue = await _context.Rentals
-                    .Where(r => r.CreatedAt.Year == currentYear && r.CreatedAt.Month == i && r.TotalPrice.HasValue)
-                    .SumAsync(r => r.TotalPrice.Value);
+                var revenue = yearRentals
+                    .Where(r => r.Month == i)
+                    .Sum(r => r.TotalPrice!.Value);
                 model.ChartData.Add(revenue);
             }
 

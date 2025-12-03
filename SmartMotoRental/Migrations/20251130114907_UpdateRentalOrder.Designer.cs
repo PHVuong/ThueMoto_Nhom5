@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SmartMotoRental.Data;
 
@@ -10,9 +11,11 @@ using SmartMotoRental.Data;
 namespace SmartMotoRental.Migrations
 {
     [DbContext(typeof(SmartMotoRentalContext))]
-    partial class SmartMotoRentalContextModelSnapshot : ModelSnapshot
+    [Migration("20251130114907_UpdateRentalOrder")]
+    partial class UpdateRentalOrder
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "7.0.0");

@@ -1,0 +1,383 @@
+@model SmartMotoRental.Models.RentalOrder
+@{
+    ViewData["Title"] = "Đặt Thuê Xe Máy";
+    var bike = ViewBag.Bike as SmartMotoRental.Models.Motorbike;
+    var bikeId = ViewBag.BikeId as int?;
+}
+
+<style>
+    .rental-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 0 0 30px 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .rental-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .bike-info-card {
+        background: white;
+        border-radius: 20px;
+        padding: 1.5rem;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        margin-bottom: 2rem;
+    }
+    
+    .bike-info-card img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 15px;
+        margin-bottom: 1rem;
+    }
+    
+    .form-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        margin-bottom: 2rem;
+    }
+    
+    .form-card h3 {
+        color: #2c3e50;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 3px solid #667eea;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-control {
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
+    .price-summary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px;
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+    
+    .price-summary h4 {
+        color: white;
+        margin-bottom: 1rem;
+    }
+    
+    .price-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .price-item:last-child {
+        border-bottom: none;
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 2px solid rgba(255,255,255,0.3);
+    }
+    
+    .btn-submit {
+        width: 100%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        padding: 15px 40px;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        color: white;
+    }
+    
+    .alert {
+        border-radius: 15px;
+        padding: 1rem 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .text-danger {
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+</style>
+
+<div class="rental-header">
+    <div class="container">
+        <h1>🚀 Đặt Thuê Xe Máy</h1>
+        <p style="opacity: 0.9; margin: 0;">Điền thông tin để đặt thuê xe máy</p>
+    </div>
+</div>
+
+<div class="container">
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">
+            <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+        </div>
+    }
+    
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+        </div>
+    }
+
+    <div class="row">
+        @if (bike != null)
+        {
+            <div class="col-lg-4">
+                <div class="bike-info-card">
+                    <h4 class="mb-3">Xe Đã Chọn</h4>
+                    @if (!string.IsNullOrEmpty(bike.ImageUrl))
+                    {
+                        <img src="@bike.ImageUrl" alt="@bike.Name" />
+                    }
+                    else
+                    {
+                        <div style="display: flex; align-items: center; justify-content: center; height: 200px; background: #f5f7fa; border-radius: 15px; font-size: 4rem;">
+                            🏍️
+                        </div>
+                    }
+                    <h5>@bike.Name</h5>
+                    @if (!string.IsNullOrEmpty(bike.Brand))
+                    {
+                        <p class="text-muted mb-1"><strong>Hãng:</strong> @bike.Brand</p>
+                    }
+                    @if (bike.PricePerHour.HasValue || bike.PricePerDay.HasValue)
+                    {
+                        <div class="mt-2">
+                            @if (bike.PricePerHour.HasValue)
+                            {
+                                <small class="text-muted">@bike.PricePerHour.Value.ToString("N0") VNĐ/giờ</small>
+                            }
+                            @if (bike.PricePerDay.HasValue)
+                            {
+                                @if (bike.PricePerHour.HasValue) { <span> | </span> }
+                                <small class="text-muted">@bike.PricePerDay.Value.ToString("N0") VNĐ/ngày</small>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <div class="@(bike != null ? "col-lg-8" : "col-lg-12")">
+            <form asp-action="DatXe" method="post" id="rentalForm">
+                @Html.AntiForgeryToken()
+                
+                @if (bikeId.HasValue)
+                {
+                    <input type="hidden" asp-for="BikeId" value="@bikeId.Value" />
+                }
+                else
+                {
+                    <div class="form-card">
+                        <h3>📋 Thông Tin Xe</h3>
+                        <div class="mb-3">
+                            <label asp-for="BikeId" class="form-label">Chọn Xe Máy</label>
+                            <select asp-for="BikeId" class="form-control" required>
+                                <option value="">-- Chọn xe máy --</option>
+                                @foreach (var motorbike in ViewBag.AvailableBikes ?? new List<SmartMotoRental.Models.Motorbike>())
+                                {
+                                    <option value="@motorbike.BikeId">@motorbike.Name - @(motorbike.PricePerDay?.ToString("N0") ?? "N/A") VNĐ/ngày</option>
+                                }
+                            </select>
+                            <span asp-validation-for="BikeId" class="text-danger"></span>
+                        </div>
+                    </div>
+                }
+
+                <div class="form-card">
+                    <h3>📍 Địa Điểm Thuê & Trả Xe</h3>
+                    
+                    <div class="mb-3">
+                        <label asp-for="PickupLocation" class="form-label">Địa Điểm Nhận Xe *</label>
+                        <input asp-for="PickupLocation" type="text" class="form-control" 
+                               placeholder="Ví dụ: 254 Nguyễn Văn Linh, TP. Đà Nẵng" required />
+                        <span asp-validation-for="PickupLocation" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="ReturnLocation" class="form-label">Địa Điểm Trả Xe *</label>
+                        <input asp-for="ReturnLocation" type="text" class="form-control" 
+                               placeholder="Ví dụ: 254 Nguyễn Văn Linh, TP. Đà Nẵng" required />
+                        <span asp-validation-for="ReturnLocation" class="text-danger"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="PickupDate" class="form-label">Ngày & Giờ Nhận Xe *</label>
+                            <input asp-for="PickupDate" type="datetime-local" class="form-control" required />
+                            <span asp-validation-for="PickupDate" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="ReturnDate" class="form-label">Ngày & Giờ Trả Xe *</label>
+                            <input asp-for="ReturnDate" type="datetime-local" class="form-control" required />
+                            <span asp-validation-for="ReturnDate" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-card">
+                    <h3>👤 Thông Tin Khách Hàng</h3>
+                    
+                    <div class="mb-3">
+                        <label asp-for="CustomerName" class="form-label">Họ và Tên *</label>
+                        <input asp-for="CustomerName" type="text" class="form-control" 
+                               placeholder="Nhập họ và tên" required />
+                        <span asp-validation-for="CustomerName" class="text-danger"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="PhoneNumber" class="form-label">Số Điện Thoại *</label>
+                            <input asp-for="PhoneNumber" type="tel" class="form-control" 
+                                   placeholder="0901234567" required />
+                            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Email" class="form-label">Email</label>
+                            <input asp-for="Email" type="email" class="form-control" 
+                                   placeholder="example@email.com" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Note" class="form-label">Ghi Chú</label>
+                        <textarea asp-for="Note" class="form-control" rows="3" 
+                                  placeholder="Ghi chú thêm (nếu có)"></textarea>
+                        <span asp-validation-for="Note" class="text-danger"></span>
+                    </div>
+                </div>
+
+                @if (bike != null)
+                {
+                    <div class="price-summary" id="priceSummary" style="display: none;">
+                        <h4>💰 Tổng Tiền Dự Kiến</h4>
+                        <div class="price-item">
+                            <span>Thời gian thuê:</span>
+                            <span id="rentalDuration">-</span>
+                        </div>
+                        <div class="price-item">
+                            <span>Giá thuê:</span>
+                            <span id="rentalPrice">-</span>
+                        </div>
+                        <div class="price-item">
+                            <span>Tổng cộng:</span>
+                            <span id="totalPrice">0 VNĐ</span>
+                        </div>
+                    </div>
+                }
+
+                <div class="form-card">
+                    <button type="submit" class="btn btn-submit">
+                        <i class="bi bi-check-circle me-2"></i>Xác Nhận Đặt Thuê
+                    </button>
+                    <div class="text-center mt-3">
+                        <a href="@Url.Action("Index", "Motorbike")" class="text-muted">
+                            ← Quay lại danh sách xe
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@if (bike != null)
+{
+    <script>
+        const pricePerHour = @(bike.PricePerHour?.ToString("0") ?? "0");
+        const pricePerDay = @(bike.PricePerDay?.ToString("0") ?? "0");
+        
+        function calculatePrice() {
+            const pickupDate = document.querySelector('input[name="PickupDate"]').value;
+            const returnDate = document.querySelector('input[name="ReturnDate"]').value;
+            
+            if (!pickupDate || !returnDate) {
+                document.getElementById('priceSummary').style.display = 'none';
+                return;
+            }
+            
+            const pickup = new Date(pickupDate);
+            const returnTime = new Date(returnDate);
+            
+            if (returnTime <= pickup) {
+                document.getElementById('priceSummary').style.display = 'none';
+                return;
+            }
+            
+            const diffMs = returnTime - pickup;
+            const diffHours = Math.ceil(diffMs / (1000 * 60 * 60));
+            const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+            
+            let totalPrice = 0;
+            let priceText = '';
+            
+            if (diffDays >= 1 && pricePerDay > 0) {
+                totalPrice = pricePerDay * diffDays;
+                priceText = `${pricePerDay.toLocaleString('vi-VN')} VNĐ/ngày × ${diffDays} ngày`;
+            } else if (pricePerHour > 0) {
+                totalPrice = pricePerHour * diffHours;
+                priceText = `${pricePerHour.toLocaleString('vi-VN')} VNĐ/giờ × ${diffHours} giờ`;
+            }
+            
+            if (totalPrice > 0) {
+                document.getElementById('rentalDuration').textContent = `${diffDays} ngày, ${diffHours % 24} giờ`;
+                document.getElementById('rentalPrice').textContent = priceText;
+                document.getElementById('totalPrice').textContent = `${totalPrice.toLocaleString('vi-VN')} VNĐ`;
+                document.getElementById('priceSummary').style.display = 'block';
+            } else {
+                document.getElementById('priceSummary').style.display = 'none';
+            }
+        }
+        
+        document.querySelector('input[name="PickupDate"]').addEventListener('change', calculatePrice);
+        document.querySelector('input[name="ReturnDate"]').addEventListener('change', calculatePrice);
+        
+        // Set min date to today
+        const today = new Date().toISOString().slice(0, 16);
+        document.querySelector('input[name="PickupDate"]').setAttribute('min', today);
+        document.querySelector('input[name="ReturnDate"]').setAttribute('min', today);
+    </script>
+}
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

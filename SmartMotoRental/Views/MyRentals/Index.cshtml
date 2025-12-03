@@ -1,0 +1,357 @@
+@model IEnumerable<SmartMotoRental.Models.Rental>
+@{
+    ViewData["Title"] = "Đơn Thuê Của Tôi";
+}
+
+<style>
+    .rentals-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 3rem;
+        border-radius: 0 0 30px 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .rentals-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .rental-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+    }
+    
+    .rental-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    }
+    
+    .rental-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f0f0f0;
+    }
+    
+    .rental-id {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #2c3e50;
+    }
+    
+    .status-badge {
+        padding: 8px 20px;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    .status-confirmed {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+    
+    .status-active {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .status-completed {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .status-cancelled {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .rental-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .info-item {
+        display: flex;
+        align-items: center;
+    }
+    
+    .info-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        font-size: 1.2rem;
+    }
+    
+    .info-content {
+        flex: 1;
+    }
+    
+    .info-label {
+        font-size: 0.85rem;
+        color: #7f8c8d;
+        margin-bottom: 0.25rem;
+    }
+    
+    .info-value {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .bike-info {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .bike-info h4 {
+        color: #2c3e50;
+        margin-bottom: 1rem;
+        font-size: 1.2rem;
+    }
+    
+    .bike-image {
+        width: 100%;
+        max-width: 200px;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+    }
+    
+    .rental-actions {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .btn-action {
+        padding: 10px 25px;
+        border-radius: 25px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .btn-details {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .btn-details:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        color: white;
+    }
+    
+    .btn-cancel {
+        background: #dc3545;
+        color: white;
+    }
+    
+    .btn-cancel:hover {
+        background: #c82333;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(220, 53, 69, 0.3);
+        color: white;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        border-radius: 20px;
+        margin: 2rem 0;
+    }
+    
+    .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+    
+    .empty-state h3 {
+        color: #2c3e50;
+        margin-bottom: 1rem;
+    }
+    
+    .empty-state p {
+        color: #7f8c8d;
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+</style>
+
+<div class="rentals-header">
+    <div class="container">
+        <h1>📋 Đơn Thuê Của Tôi</h1>
+        <p style="opacity: 0.9; margin: 0;">Xem và quản lý các đơn thuê xe của bạn</p>
+    </div>
+</div>
+
+<div class="container">
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">
+            <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+        </div>
+    }
+    
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+        </div>
+    }
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-state-icon">🚫</div>
+            <h3>Chưa có đơn thuê nào</h3>
+            <p>Bạn chưa có đơn thuê xe nào. Hãy bắt đầu thuê xe ngay!</p>
+            <a href="@Url.Action("Index", "Motorbike")" class="btn btn-details">
+                Xem Danh Sách Xe →
+            </a>
+        </div>
+    }
+    else
+    {
+        @foreach (var rental in Model)
+        {
+            var statusText = rental.Status switch
+            {
+                RentalStatus.Pending => "Đang chờ duyệt",
+                RentalStatus.Confirmed => "Đã xác nhận",
+                RentalStatus.Active => "Đang thuê",
+                RentalStatus.Completed => "Đã hoàn thành",
+                RentalStatus.Cancelled => "Đã hủy",
+                _ => rental.Status.ToString()
+            };
+            
+            var statusClass = rental.Status switch
+            {
+                RentalStatus.Pending => "status-pending",
+                RentalStatus.Confirmed => "status-confirmed",
+                RentalStatus.Active => "status-active",
+                RentalStatus.Completed => "status-completed",
+                RentalStatus.Cancelled => "status-cancelled",
+                _ => "status-pending"
+            };
+
+            <div class="rental-card">
+                <div class="rental-header-row">
+                    <div class="rental-id">Đơn #@rental.RentalId</div>
+                    <span class="status-badge @statusClass">@statusText</span>
+                </div>
+
+                <div class="rental-info">
+                    <div class="info-item">
+                        <div class="info-icon">🏍️</div>
+                        <div class="info-content">
+                            <div class="info-label">Xe máy</div>
+                            <div class="info-value">@(rental.Motorbike?.Name ?? "N/A")</div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">📅</div>
+                        <div class="info-content">
+                            <div class="info-label">Ngày nhận</div>
+                            <div class="info-value">@(rental.PickupTime?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">📅</div>
+                        <div class="info-content">
+                            <div class="info-label">Ngày trả</div>
+                            <div class="info-value">@(rental.ReturnTime?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">💰</div>
+                        <div class="info-content">
+                            <div class="info-label">Tổng tiền</div>
+                            <div class="info-value">@(rental.TotalPrice?.ToString("N0") ?? "0") VNĐ</div>
+                        </div>
+                    </div>
+                </div>
+
+                @if (rental.Motorbike != null)
+                {
+                    <div class="bike-info">
+                        <h4>Thông tin xe</h4>
+                        <div class="row">
+                            <div class="col-md-3">
+                                @if (!string.IsNullOrEmpty(rental.Motorbike.ImageUrl))
+                                {
+                                    <img src="@rental.Motorbike.ImageUrl" alt="@rental.Motorbike.Name" class="bike-image" />
+                                }
+                                else
+                                {
+                                    <div style="width: 200px; height: 150px; background: #f0f0f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 3rem;">
+                                        🏍️
+                                    </div>
+                                }
+                            </div>
+                            <div class="col-md-9">
+                                <p><strong>Loại:</strong> @(rental.Motorbike.Type ?? "N/A")</p>
+                                <p><strong>Hãng:</strong> @(rental.Motorbike.Brand ?? "N/A")</p>
+                                <p><strong>Năm:</strong> @(rental.Motorbike.Year?.ToString() ?? "N/A")</p>
+                                @if (!string.IsNullOrEmpty(rental.Motorbike.Location))
+                                {
+                                    <p><strong>📍 Vị trí:</strong> @rental.Motorbike.Location</p>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <div class="rental-actions">
+                    <a href="@Url.Action("Details", "MyRentals", new { id = rental.RentalId })" class="btn-action btn-details">
+                        Xem Chi Tiết →
+                    </a>
+                    @if (rental.Status == RentalStatus.Pending || rental.Status == RentalStatus.Confirmed)
+                    {
+                        <form asp-action="Cancel" method="post" style="display: inline;" onsubmit="return confirm('Bạn có chắc chắn muốn hủy đơn thuê này?');">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@rental.RentalId" />
+                            <button type="submit" class="btn-action btn-cancel">
+                                Hủy Đơn
+                            </button>
+                        </form>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>
+

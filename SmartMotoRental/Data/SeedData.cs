@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SmartMotoRental.Models;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace SmartMotoRental.Data;
 
@@ -8,6 +10,27 @@ public static class SeedData
     public static async Task SeedAsync(SmartMotoRentalContext context)
     {
         await context.Database.EnsureCreatedAsync();
+
+        // Seed Admin User
+        User? adminUser = null;
+        if (!await context.Users.AnyAsync(u => u.Role == UserRole.Admin))
+        {
+            adminUser = new User
+            {
+                FullName = "Quản Trị Viên",
+                Email = "admin@smartmotorental.com",
+                Phone = "19001234",
+                PasswordHash = HashPassword("admin123"),
+                Role = UserRole.Admin,
+                CreatedAt = DateTime.UtcNow
+            };
+            context.Users.Add(adminUser);
+            await context.SaveChangesAsync();
+        }
+        else
+        {
+            adminUser = await context.Users.FirstOrDefaultAsync(u => u.Role == UserRole.Admin);
+        }
 
         if (!await context.Motorbikes.AnyAsync())
         {
@@ -123,29 +146,67 @@ public static class SeedData
             await context.SaveChangesAsync();
         }
 
-        if (!await context.Notifications.AnyAsync())
+        if (!await context.Notifications.AnyAsync() && adminUser != null)
         {
             var notifications = new List<Notification>
             {
+                // Thông báo hệ thống (hiển thị cho tất cả user)
                 new Notification 
                 { 
+                    UserId = adminUser.UserId,
+                    Message = "⚠️ Lịch thuê xe của bạn sắp đến hạn",
+                    Type = NotificationType.System,
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Notification 
+                { 
+                    UserId = adminUser.UserId,
+                    Message = "⚠️ Xe B có ưu đãi 20%",
+                    Type = NotificationType.System,
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Notification 
+                { 
+                    UserId = adminUser.UserId,
+                    Message = "⚠️ Xe A đã được đặt thành công",
+                    Type = NotificationType.System,
+                    CreatedAt = DateTime.UtcNow
+                },
+                // Thông báo cho user cụ thể
+                new Notification 
+                { 
+                    UserId = adminUser.UserId,
                     Message = "Xe A đã được đặt thành công",
+                    Type = NotificationType.Rental,
                     CreatedAt = DateTime.UtcNow
                 },
                 new Notification 
                 { 
+                    UserId = adminUser.UserId,
                     Message = "Lịch thuê xe của bạn sắp đến hạn",
+                    Type = NotificationType.Rental,
                     CreatedAt = DateTime.UtcNow
                 },
                 new Notification 
                 { 
+                    UserId = adminUser.UserId,
                     Message = "Xe B có ưu đãi 20%",
+                    Type = NotificationType.Promotion,
                     CreatedAt = DateTime.UtcNow
                 }
             };
 
             await context.Notifications.AddRangeAsync(notifications);
             await context.SaveChangesAsync();
+        }
+    }
+
+    private static string HashPassword(string password)
+    {
+        using (var sha256 = SHA256.Create())
+        {
+            var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+            return Convert.ToBase64String(hashedBytes);
         }
     }
 }

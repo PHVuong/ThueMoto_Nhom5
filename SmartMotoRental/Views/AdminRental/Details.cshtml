@@ -292,6 +292,17 @@
                             Không có hành động nào khả dụng cho đơn thuê này.
                         </div>
                     }
+
+                    <hr />
+
+                    <!-- Xóa đơn thuê -->
+                    <form asp-action="Delete" method="post" class="mt-2">
+                        <input type="hidden" name="id" value="@Model.RentalId" />
+                        <button type="submit" class="btn btn-outline-danger w-100"
+                                onclick="return confirm('Bạn chắc chắn muốn xóa vĩnh viễn đơn thuê này? Hành động không thể hoàn tác.')">
+                            <i class="fas fa-trash-alt"></i> Xóa đơn thuê
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>

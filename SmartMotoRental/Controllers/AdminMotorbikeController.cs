@@ -1,12 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using SmartMotoRental.Models;
 using SmartMotoRental.Data;
 using Microsoft.EntityFrameworkCore;
+using System.IO;
 
 namespace SmartMotoRental.Controllers
 {
-    [Authorize(Roles = "Admin")]
     public class AdminMotorbikeController : Controller
     {
         private readonly SmartMotoRentalContext _context;
@@ -110,23 +109,42 @@ namespace SmartMotoRental.Controllers
             {
                 try
                 {
+                    var existingBike = await _context.Motorbikes.FindAsync(id);
+                    if (existingBike == null)
+                    {
+                        return NotFound();
+                    }
+
                     // Kiểm tra biển số trùng (trừ xe hiện tại)
-                    var existingBike = await _context.Motorbikes
+                    var duplicateBike = await _context.Motorbikes
                         .FirstOrDefaultAsync(m => m.PlateNumber == motorbike.PlateNumber && m.BikeId != id);
                     
-                    if (existingBike != null)
+                    if (duplicateBike != null)
                     {
                         ModelState.AddModelError("PlateNumber", "Biển số xe này đã tồn tại trong hệ thống");
                         return View(motorbike);
                     }
 
+                    // Cập nhật thông tin
+                    existingBike.Name = motorbike.Name;
+                    existingBike.Type = motorbike.Type;
+                    existingBike.Brand = motorbike.Brand;
+                    existingBike.Year = motorbike.Year;
+                    existingBike.PlateNumber = motorbike.PlateNumber;
+                    existingBike.Condition = motorbike.Condition;
+                    existingBike.Status = motorbike.Status;
+                    existingBike.PricePerHour = motorbike.PricePerHour;
+                    existingBike.PricePerDay = motorbike.PricePerDay;
+                    existingBike.Location = motorbike.Location;
+                    existingBike.Description = motorbike.Description;
+
                     // Xử lý upload ảnh mới
                     if (image != null && image.Length > 0)
                     {
                         // Xóa ảnh cũ nếu có
-                        if (!string.IsNullOrEmpty(motorbike.ImageUrl))
+                        if (!string.IsNullOrEmpty(existingBike.ImageUrl))
                         {
-                            string oldImagePath = Path.Combine(_hostEnvironment.WebRootPath, motorbike.ImageUrl.TrimStart('/'));
+                            string oldImagePath = Path.Combine(_hostEnvironment.WebRootPath, existingBike.ImageUrl.TrimStart('/'));
                             if (System.IO.File.Exists(oldImagePath))
                             {
                                 System.IO.File.Delete(oldImagePath);
@@ -150,10 +168,10 @@ namespace SmartMotoRental.Controllers
                             await image.CopyToAsync(fileStream);
                         }
 
-                        motorbike.ImageUrl = "/images/motorbikes/" + fileName;
+                        existingBike.ImageUrl = "/images/motorbikes/" + fileName;
                     }
 
-                    _context.Update(motorbike);
+                    _context.Update(existingBike);
                     await _context.SaveChangesAsync();
 
                     TempData["Success"] = "Cập nhật xe thành công!";

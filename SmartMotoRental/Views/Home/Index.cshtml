@@ -1,9 +1,656 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@model IEnumerable<SmartMotoRental.Models.Motorbike>
+@{
+    ViewData["Title"] = "Trang Chủ - Smart Moto Rental";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<style>
+    .hero-banner {
+        position: relative;
+        width: 100%;
+        height: 500px;
+        overflow: hidden;
+        margin-bottom: 3rem;
+        border-radius: 0 0 30px 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    
+    .hero-banner img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .hero-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.7) 0%, rgba(118, 75, 162, 0.7) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        color: white;
+        text-align: center;
+        padding: 2rem;
+    }
+    
+    .hero-overlay h1 {
+        font-size: 3.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+    }
+    
+    .hero-overlay p {
+        font-size: 1.3rem;
+        opacity: 0.95;
+        max-width: 600px;
+    }
+    
+    .featured-bikes-section {
+        margin: 3rem auto;
+        padding: 0 15px 0 15px;
+        max-width: 1200px;
+        /* Không dùng z-index để tránh đè lên footer */
+        margin-bottom: 6rem;
+        padding-bottom: 6rem;
+    }
+    
+    .row.g-4 {
+        margin-bottom: 3rem;
+    }
+    
+    .row.g-4 > div {
+        margin-bottom: 2rem;
+    }
+    
+    .section-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+    
+    .section-header h2 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 1rem;
+    }
+    
+    .section-header p {
+        font-size: 1.1rem;
+        color: #7f8c8d;
+    }
+    
+    .bike-card {
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        margin-bottom: 2rem;
+        background: white;
+        display: flex;
+        flex-direction: column;
+        min-height: 620px;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .bike-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    }
+    
+    .bike-image-wrapper {
+        position: relative;
+        overflow: hidden;
+        height: 250px;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        flex-shrink: 0;
+    }
+    
+    .bike-image-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    
+    .bike-card:hover .bike-image-wrapper img {
+        transform: scale(1.1);
+    }
+    
+    .bike-status-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: rgba(40, 167, 69, 0.95);
+        color: white;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        z-index: 10;
+    }
+    
+    .bike-card-body {
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+        min-height: 350px;
+    }
+    
+    .bike-card-content {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .bike-card-actions {
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e9ecef;
+    }
+    
+    .bike-card-actions .d-flex {
+        display: flex;
+        gap: 0.5rem;
+        flex-direction: column;
+    }
+    
+    .bike-card-actions .d-flex .bike-btn-details {
+        margin-top: 0;
+    }
+    
+    .bike-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0.8rem;
+        line-height: 1.3;
+    }
+    
+    .bike-info {
+        margin-bottom: 1rem;
+        flex-grow: 0;
+    }
+    
+    .bike-info-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+        color: #555;
+        font-size: 0.9rem;
+    }
+    
+    .bike-info-item strong {
+        color: #2c3e50;
+        margin-right: 5px;
+        min-width: 60px;
+    }
+    
+    .bike-price {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.8rem;
+        border-radius: 15px;
+        margin: 1.5rem 0 0 0;
+        text-align: center;
+        flex-shrink: 0;
+    }
+    
+    .bike-price-label {
+        font-size: 0.8rem;
+        opacity: 0.9;
+        margin-bottom: 0.3rem;
+    }
+    
+    .bike-price-value {
+        font-size: 1.2rem;
+        font-weight: 700;
+    }
+    
+    .bike-price-unit {
+        font-size: 0.85rem;
+        opacity: 0.85;
+    }
+    
+    .bike-btn-details {
+        width: 100%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        padding: 12px 25px;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        color: white;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        margin-top: 0;
+        flex-shrink: 0;
+    }
+    
+    .bike-btn-details:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        color: white;
+    }
+    
+    .view-all-link {
+        text-align: center;
+        margin-top: 3rem;
+        margin-bottom: 4rem;
+        padding-bottom: 2rem;
+    }
+    
+    .view-all-link a {
+        display: inline-block;
+        padding: 15px 40px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        text-decoration: none;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    }
+    
+    .view-all-link a:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    }
+    
+    @@media (max-width: 768px) {
+        .hero-banner {
+            height: 350px;
+        }
+        
+        .hero-overlay h1 {
+            font-size: 2.5rem;
+        }
+        
+        .hero-overlay p {
+            font-size: 1.1rem;
+        }
+        
+        .section-header h2 {
+            font-size: 2rem;
+        }
+        
+        .bike-card {
+            min-height: auto;
+        }
+        
+        .bike-card-body {
+            min-height: auto;
+        }
+        
+        .featured-bikes-section {
+            padding-bottom: 4rem;
+        }
+    }
+</style>
+
+<!-- Hero Banner -->
+<div class="hero-banner" style="margin-left: -15px; margin-right: -15px;">
+    <img src="https://res.cloudinary.com/dmbjv3e5f/image/upload/v1764484765/biaxe_pkie5p.jpg" alt="Xe máy đẹp" id="hero-image" />
+    <div class="hero-overlay">
+        <h1>🏍️ Smart Moto Rental</h1>
+        <p>Thuê xe máy chất lượng cao với giá cả hợp lý</p>
+    </div>
 </div>
+
+<!-- Featured Bikes Section -->
+<div class="featured-bikes-section">
+        <div class="section-header">
+            <h2>Xe Nổi Bật</h2>
+            <p>Khám phá những chiếc xe máy chất lượng cao của chúng tôi</p>
+        </div>
+        
+        @if(Model == null || !Model.Any())
+        {
+            <div class="text-center" style="padding: 4rem 2rem;">
+                <h3 style="color: #2c3e50; margin-bottom: 1rem;">Chưa có xe máy nào</h3>
+                <p style="color: #7f8c8d; font-size: 1.1rem;">Hiện tại chúng tôi chưa có xe máy nào trong danh sách. Vui lòng quay lại sau!</p>
+            </div>
+        }
+        else
+        {
+            <div class="row g-4">
+                @foreach(var bike in Model)
+                {
+                    <div class="col-lg-4 col-md-6 col-sm-12">
+                        <div class="bike-card">
+                            <div class="bike-image-wrapper">
+                                @if (!string.IsNullOrEmpty(bike.ImageUrl))
+                                {
+                                    <img src="@bike.ImageUrl" alt="@bike.Name" />
+                                }
+                                else
+                                {
+                                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #999; font-size: 3rem;">
+                                        🏍️
+                                    </div>
+                                }
+                                @if (bike.Status == SmartMotoRental.Models.MotorbikeStatus.Available)
+                                {
+                                    <div class="bike-status-badge">
+                                        ✓ Có sẵn
+                                    </div>
+                                }
+                            </div>
+                            <div class="bike-card-body">
+                                <div class="bike-card-content">
+                                    <h5 class="bike-title">@bike.Name</h5>
+                                    <div class="bike-info">
+                                        @if (!string.IsNullOrEmpty(bike.Type))
+                                        {
+                                            <div class="bike-info-item">
+                                                <strong>Loại:</strong> <span>@bike.Type</span>
+                                            </div>
+                                        }
+                                        @if (!string.IsNullOrEmpty(bike.Brand))
+                                        {
+                                            <div class="bike-info-item">
+                                                <strong>Hãng:</strong> <span>@bike.Brand</span>
+                                            </div>
+                                        }
+                                        @if (bike.Year.HasValue)
+                                        {
+                                            <div class="bike-info-item">
+                                                <strong>Năm:</strong> <span>@bike.Year</span>
+                                            </div>
+                                        }
+                                    </div>
+                                    
+                                    @if (bike.PricePerHour.HasValue || bike.PricePerDay.HasValue)
+                                    {
+                                        <div class="bike-price">
+                                            <div class="bike-price-label">Giá thuê</div>
+                                            <div class="bike-price-value">
+                                                @if (bike.PricePerHour.HasValue)
+                                                {
+                                                    <span>@bike.PricePerHour.Value.ToString("N0")</span>
+                                                    <span class="bike-price-unit">VNĐ/giờ</span>
+                                                }
+                                                @if (bike.PricePerDay.HasValue)
+                                                {
+                                                    @if (bike.PricePerHour.HasValue) { <span> | </span> }
+                                                    <span>@bike.PricePerDay.Value.ToString("N0")</span>
+                                                    <span class="bike-price-unit">VNĐ/ngày</span>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                                
+                                <div class="bike-card-actions">
+                                <div class="d-flex gap-2">
+                                    <a href="@Url.Action("Details", "Motorbike", new { id = bike.BikeId })" class="bike-btn-details" style="flex: 1;">
+                                        Xem Chi Tiết →
+                                    </a>
+                                    @if (bike.Status == SmartMotoRental.Models.MotorbikeStatus.Available)
+                                    {
+                                        <a href="@Url.Action("Index", "DatThueXe", new { bikeId = bike.BikeId })" 
+                                           class="bike-btn-details" 
+                                           style="flex: 1; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                                            Thuê Ngay →
+                                        </a>
+                                    }
+                                </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            
+            <div class="view-all-link">
+                <a href="@Url.Action("Index", "Motorbike")">Xem Tất Cả Xe →</a>
+            </div>
+        }
+</div>
+
+<!-- Notification Modal -->
+@{
+    var notifications = ViewBag.Notifications as List<SmartMotoRental.Models.Notification>;
+    var hasNotifications = notifications != null && notifications.Any();
+}
+@if (hasNotifications)
+{
+    <div class="notification-modal" id="notificationModal">
+        <div class="notification-modal-content">
+            <div class="notification-modal-header">
+                <h3>🔔 Thông Báo</h3>
+                <button type="button" class="notification-close" onclick="closeNotificationModal()" aria-label="Đóng" title="Đóng">
+                    <span class="close-icon">×</span>
+                </button>
+            </div>
+            <div class="notification-modal-body">
+                @foreach (var notification in notifications)
+                {
+                    <div class="notification-item">
+                        <div class="notification-message">
+                            <i class="bi bi-bell-fill me-2"></i>
+                            @notification.Message
+                        </div>
+                        <div class="notification-time">
+                            @notification.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="notification-modal-footer">
+                <a href="@Url.Action("Index", "Notifications")" class="btn-view-all">Xem tất cả thông báo →</a>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .notification-modal {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        animation: fadeIn 0.3s ease;
+    }
+    
+    .notification-modal.show {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    @@keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    .notification-modal-content {
+        background: white;
+        border-radius: 20px;
+        width: 90%;
+        max-width: 500px;
+        max-height: 80vh;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        animation: slideUp 0.3s ease;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    @@keyframes slideUp {
+        from {
+            transform: translateY(50px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+    
+    .notification-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem;
+        border-bottom: 2px solid #f0f0f0;
+    }
+    
+    .notification-modal-header h3 {
+        margin: 0;
+        color: #2c3e50;
+        font-weight: 700;
+        font-size: 1.5rem;
+    }
+    
+    .notification-close {
+        background: none;
+        border: none;
+        font-size: 2rem;
+        color: #7f8c8d;
+        cursor: pointer;
+        padding: 0;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        line-height: 1;
+    }
+    
+    .notification-close .close-icon {
+        font-size: 2rem;
+        font-weight: bold;
+        line-height: 1;
+        display: block;
+    }
+    
+    .notification-close:hover {
+        background: #f0f0f0;
+        color: #dc3545;
+        transform: rotate(90deg);
+    }
+    
+    .notification-modal-body {
+        padding: 1.5rem;
+        overflow-y: auto;
+        flex: 1;
+        max-height: 400px;
+    }
+    
+    .notification-item {
+        padding: 1rem;
+        border-radius: 10px;
+        background: #f8f9fa;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .notification-item:hover {
+        background: #e9ecef;
+        transform: translateX(5px);
+    }
+    
+    .notification-item:last-child {
+        margin-bottom: 0;
+    }
+    
+    .notification-message {
+        color: #2c3e50;
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+        line-height: 1.5;
+    }
+    
+    .notification-time {
+        font-size: 0.85rem;
+        color: #7f8c8d;
+    }
+    
+    .notification-modal-footer {
+        padding: 1rem 1.5rem;
+        border-top: 2px solid #f0f0f0;
+        text-align: center;
+    }
+    
+    .btn-view-all {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-view-all:hover {
+        color: #764ba2;
+        text-decoration: underline;
+    }
+</style>
+
+<script>
+    // Kiểm tra xem đã đóng modal chưa
+    function shouldShowNotification() {
+        const closed = localStorage.getItem('notificationModalClosed');
+        if (closed) {
+            const closedTime = new Date(closed);
+            const now = new Date();
+            // Hiển thị lại sau 24 giờ
+            const hoursDiff = (now - closedTime) / (1000 * 60 * 60);
+            return hoursDiff >= 24;
+        }
+        return true;
+    }
+    
+    // Hiển thị modal khi trang load (chỉ ở trang home)
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('notificationModal');
+        if (modal) {
+            if (shouldShowNotification()) {
+                // Đảm bảo modal hiển thị
+                modal.classList.add('show');
+                modal.style.display = 'flex';
+            } else {
+                // Nếu đã đóng trong 24h, ẩn modal
+                modal.classList.remove('show');
+                modal.style.display = 'none';
+            }
+        }
+    });
+    
+    // Đóng modal
+    function closeNotificationModal() {
+        const modal = document.getElementById('notificationModal');
+        if (modal) {
+            modal.classList.remove('show');
+            modal.style.display = 'none';
+            // Lưu thời gian đóng vào localStorage
+            localStorage.setItem('notificationModalClosed', new Date().toISOString());
+        }
+    }
+    
+    // Đóng khi click bên ngoài modal
+    window.onclick = function(event) {
+        const modal = document.getElementById('notificationModal');
+        if (event.target == modal) {
+            closeNotificationModal();
+        }
+    }
+</script>
 

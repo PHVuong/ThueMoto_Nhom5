@@ -431,9 +431,9 @@
     <div class="action-buttons">
         @if (Model.Status == SmartMotoRental.Models.MotorbikeStatus.Available)
         {
-            <button class="btn btn-rent" onclick="alert('Tính năng thuê xe sẽ được triển khai sớm!')">
+            <a href="@Url.Action("Index", "DatThueXe", new { bikeId = Model.BikeId })" class="btn btn-rent">
                 🚀 Thuê Ngay
-            </button>
+            </a>
         }
         <a href="@Url.Action("Index", "Motorbike")" class="btn btn-back">
             ← Quay Lại Danh Sách

@@ -1,12 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using SmartMotoRental.Models;
 using SmartMotoRental.Data;
 
 namespace SmartMotoRental.Controllers
 {
-    [Authorize(Roles = "Admin")]
     public class AdminRentalController : Controller
     {
         private readonly SmartMotoRentalContext _context;
@@ -170,7 +168,16 @@ namespace SmartMotoRental.Controllers
                 return RedirectToAction(nameof(Details), new { id });
             }
 
+            // Cập nhật trạng thái đơn
             rental.Status = RentalStatus.Completed;
+
+            // Khi hoàn thành đơn thì đánh dấu đã thanh toán
+            // (nếu chưa có thời gian thanh toán thì gán thời gian hiện tại)
+            if (!rental.PaymentPaidAt.HasValue)
+            {
+                rental.PaymentPaidAt = DateTime.UtcNow;
+            }
+
             if (rental.Motorbike != null)
             {
                 rental.Motorbike.Status = MotorbikeStatus.Available;
@@ -225,6 +232,35 @@ namespace SmartMotoRental.Controllers
             return RedirectToAction(nameof(Details), new { id });
         }
 
+        // POST: AdminRental/Delete/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var rental = await _context.Rentals
+                .Include(r => r.Motorbike)
+                .FirstOrDefaultAsync(r => r.RentalId == id);
+
+            if (rental == null)
+            {
+                TempData["Error"] = "Không tìm thấy đơn thuê";
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Nếu xe đang ở trạng thái đang thuê thì trả lại trạng thái sẵn sàng
+            if (rental.Motorbike != null && rental.Motorbike.Status == MotorbikeStatus.Rented)
+            {
+                rental.Motorbike.Status = MotorbikeStatus.Available;
+                _context.Update(rental.Motorbike);
+            }
+
+            _context.Rentals.Remove(rental);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Xóa đơn thuê thành công!";
+            return RedirectToAction(nameof(Index));
+        }
+
         // GET: AdminRental/Statistics
         public async Task<IActionResult> Statistics()
         {
@@ -235,9 +271,10 @@ namespace SmartMotoRental.Controllers
                 ConfirmedRentals = await _context.Rentals.CountAsync(r => r.Status == RentalStatus.Confirmed),
                 CompletedRentals = await _context.Rentals.CountAsync(r => r.Status == RentalStatus.Completed),
                 CancelledRentals = await _context.Rentals.CountAsync(r => r.Status == RentalStatus.Cancelled),
-                TotalRevenue = await _context.Rentals
+                TotalRevenue = (await _context.Rentals
                     .Where(r => r.Status == RentalStatus.Completed && r.TotalPrice.HasValue)
-                    .SumAsync(r => r.TotalPrice.Value),
+                    .Select(r => r.TotalPrice.Value)
+                    .ToListAsync()).Sum(),
                 AvailableMotorbikes = await _context.Motorbikes.CountAsync(m => m.Status == MotorbikeStatus.Available),
                 RentedMotorbikes = await _context.Motorbikes.CountAsync(m => m.Status == MotorbikeStatus.Rented),
                 MaintenanceMotorbikes = await _context.Motorbikes.CountAsync(m => m.Status == MotorbikeStatus.Maintenance)

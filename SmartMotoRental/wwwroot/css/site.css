@@ -1,5 +1,7 @@
-﻿html {
+html {
   font-size: 14px;
+  height: 100%;
+  position: relative;
 }
 
 @media (min-width: 768px) {
@@ -16,14 +18,31 @@
   box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
-html {
-  position: relative;
-  min-height: 100%;
+body {
+  margin: 0 !important;
+  padding: 0 !important;
+  background-color: #f8f9fa;
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 100vh !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  line-height: 1.6;
+  color: #333;
 }
 
-body {
-  margin-bottom: 60px;
-  background-color: #f8f9fa;
+/* Header - không bị co lại trong flexbox */
+header {
+  flex-shrink: 0;
+  width: 100%;
+}
+
+.main-wrapper {
+  flex: 1 0 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100%;
+  position: relative;
+  min-height: 0;
 }
 
 /* Smooth scrolling */
@@ -47,4 +66,420 @@ html {
 
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+/* Top Header Styles */
+.top-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  font-size: 0.9rem;
+}
+
+.top-header .vr {
+  opacity: 0.5;
+  height: 20px;
+}
+
+/* Navbar Styles */
+.navbar-brand {
+  font-weight: 600;
+}
+
+.navbar-nav .nav-link {
+  transition: color 0.3s ease;
+  padding: 0.5rem 1rem !important;
+}
+
+.navbar-nav .nav-link:hover {
+  color: #667eea !important;
+}
+
+/* Search Bar Styles */
+.form-control.rounded-pill {
+  border: 2px solid #e9ecef;
+  padding: 0.6rem 1.5rem;
+}
+
+.form-control.rounded-pill:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.btn-primary.rounded-pill {
+  padding: 0.6rem 1.5rem;
+  border: none;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.btn-primary.rounded-pill:hover {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+}
+
+/* Badge Styles */
+.badge.rounded-pill {
+  padding: 0.25rem 0.5rem;
+}
+
+/* Vertical Nav Link Styles */
+.nav-link-vertical {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5rem 0.75rem !important;
+  text-align: center;
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  margin: 0 0.25rem;
+}
+
+.nav-link-vertical:hover {
+  background-color: #f8f9fa;
+  transform: translateY(-2px);
+}
+
+.nav-icon-wrapper {
+  font-size: 1.4rem;
+  margin-bottom: 0.25rem;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.nav-icon-wrapper i {
+  color: #495057;
+  transition: color 0.3s ease;
+}
+
+.nav-link-vertical:hover .nav-icon-wrapper {
+  transform: scale(1.1);
+}
+
+.nav-link-vertical:hover .nav-icon-wrapper i {
+  color: #667eea;
+}
+
+.nav-text {
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Navbar improvements */
+.navbar {
+  padding: 1rem 0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.navbar-brand {
+  transition: transform 0.3s ease;
+}
+
+.navbar-brand:hover {
+  transform: scale(1.05);
+}
+
+/* Search bar improvements */
+.form-control.rounded-pill {
+  transition: all 0.3s ease;
+}
+
+.form-control.rounded-pill:hover {
+  border-color: #667eea;
+}
+
+/* Dropdown improvements */
+.dropdown-menu {
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-item {
+  transition: all 0.2s ease;
+  border-radius: 5px;
+  margin: 0.15rem 0.5rem;
+  width: calc(100% - 1rem);
+}
+
+.dropdown-item:hover {
+  background-color: #f8f9fa;
+  transform: translateX(5px);
+  color: #667eea;
+}
+
+/* Top header improvements */
+.top-header {
+  font-size: 0.875rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.top-header span {
+  transition: opacity 0.3s ease;
+}
+
+.top-header span:hover {
+  opacity: 0.9;
+}
+
+/* Footer improvements */
+.footer {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  margin-top: auto !important;
+  /* Sticky footer: không bị co lại và luôn ở dưới cùng */
+  flex: 0 0 auto !important;
+  width: 100% !important;
+  position: relative !important;
+  clear: both !important;
+  /* Đảm bảo footer không bao giờ có position absolute */
+  bottom: auto !important;
+  left: auto !important;
+  right: auto !important;
+  top: auto !important;
+}
+
+.footer h4,
+.footer h5 {
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.footer h5 {
+  font-size: 1.1rem;
+}
+
+.footer p {
+  margin-bottom: 0.75rem;
+  line-height: 1.8;
+}
+
+.footer a {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.footer a:hover {
+  color: white;
+  transform: translateX(5px);
+}
+
+/* Footer Menu */
+.footer-menu li a {
+  display: flex;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.footer-menu li a i {
+  font-size: 0.75rem;
+}
+
+.footer-menu li a:hover {
+  padding-left: 5px;
+}
+
+/* Contact Form in Footer */
+.contact-form {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 1.5rem;
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
+}
+
+.contact-form .form-control {
+  background-color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 0.6rem;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.contact-form .form-control:focus {
+  background-color: white;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25);
+  color: #333;
+}
+
+.contact-form .form-control::placeholder {
+  color: #999;
+}
+
+.contact-form textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.contact-form .btn-light {
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid white;
+  color: white;
+  transition: all 0.3s ease;
+  padding: 0.6rem;
+}
+
+.contact-form .btn-light:hover {
+  background: white;
+  color: #667eea;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Footer Bottom */
+.footer-bottom {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.footer-bottom p {
+  margin: 0;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Social Icons */
+.social-icons {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.social-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+}
+
+.social-icon:hover {
+  background: white;
+  color: #667eea;
+  border-color: white;
+  transform: translateY(-3px) scale(1.1);
+  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
+}
+
+.text-white-50 {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Responsive Footer */
+@media (max-width: 768px) {
+
+  .footer h4,
+  .footer h5 {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .contact-form {
+    padding: 1rem;
+  }
+
+  .footer-bottom {
+    text-align: center;
+  }
+
+  .footer-bottom .d-flex {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .social-icons {
+    justify-content: center;
+  }
+}
+
+/* Responsive improvements */
+@media (max-width: 991px) {
+  .nav-link-vertical {
+    flex-direction: row;
+    justify-content: flex-start;
+    padding: 0.75rem 1rem !important;
+  }
+
+  .nav-icon-wrapper {
+    margin-bottom: 0;
+    margin-right: 0.5rem;
+    font-size: 1.2rem;
+  }
+
+  .nav-text {
+    font-size: 1rem;
+  }
+}
+
+/* Container improvements */
+.container {
+  max-width: 1200px;
+}
+
+/* Body improvements - đã gộp vào khai báo body ở trên */
+
+/* General link improvements */
+a {
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+/* Main content improvements */
+main {
+  flex: 1 0 auto !important;
+  padding-top: 2rem;
+  /* Chừa khoảng trống để nội dung không đè lên footer */
+  padding-bottom: 4rem !important;
+  width: 100%;
+  margin-bottom: 0;
+  position: relative !important;
+  z-index: 0;
+}
+
+/* Box shadow improvements */
+.box-shadow {
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+}
+
+.navbar {
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+}
+
+/* Search button hover effect */
+.btn-primary.rounded-pill:active {
+  transform: translateY(0);
+}
+
+/* Badge styles */
+.nav-link-vertical .badge {
+  font-weight: 600;
+  box-shadow: 0 2px 5px rgba(13, 110, 253, 0.3);
+}
+
+/* Smooth transitions for all interactive elements */
+.nav-item,
+.dropdown-item,
+.btn,
+.form-control,
+.navbar-brand {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }

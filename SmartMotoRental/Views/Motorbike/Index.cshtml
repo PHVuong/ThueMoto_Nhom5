@@ -328,7 +328,7 @@
                                 </a>
                                 @if (bike.Status == SmartMotoRental.Models.MotorbikeStatus.Available)
                                 {
-                                    <a href="#" onclick="alert('Tính năng thuê xe sẽ được triển khai sớm!'); return false;" class="bike-btn-rent">
+                                    <a href="@Url.Action("Index", "DatThueXe", new { bikeId = bike.BikeId })" class="bike-btn-rent">
                                         Thuê Ngay →
                                     </a>
                                 }
